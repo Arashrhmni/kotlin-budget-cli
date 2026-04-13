@@ -4,9 +4,12 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 
 ## Features
 
-- Add expenses with a description, amount, and category
-- View all recorded expenses with a running total
-- Summarize spending broken down by category
+- Add expenses and income with a description, amount, and category
+- Categories enforced via `enum class` — no invalid input possible
+- `sealed interface` models both `Expense` and `Income` as transaction types
+- View all transactions with type labels (EXPENSE / INCOME)
+- Summarize spending and income broken down by category
+- See your current balance (total income minus total expenses)
 - Find your biggest single expense
 
 ## Getting Started
@@ -49,7 +52,11 @@ Category (food/transport/rent/entertainment/other): food
 ## What I practiced
 
 - `data class` for structured data
+- `enum class` for locked, type-safe category options
+- `sealed interface` to model a closed set of transaction types (`Expense`, `Income`)
+- `when` expressions on sealed types — exhaustive matching with no `else` needed
+- `filterIsInstance<T>()` to filter a mixed list by type
 - `mutableListOf` and list operations
-- Lambda functions (`forEach`, `groupBy`, `maxBy`, `sumOf`)
+- Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and `toDoubleOrNull()`
-- Function decomposition and `when` expressions
+- Function decomposition
