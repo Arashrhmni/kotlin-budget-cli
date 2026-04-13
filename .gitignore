@@ -1,0 +1,15 @@
+# Compiled output
+*.jar
+*.class
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Gradle (if added later)
+.gradle/
+build/
+
+# macOS
+.DS_Store
