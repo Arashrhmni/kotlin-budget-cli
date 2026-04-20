@@ -1,3 +1,8 @@
+import java.io.File
+import java.time.LocalDate
+
+const val DATA_FILE_NAME = "transactions.txt"
+
 // Enum class: locked set of valid categories — no more typos like "fod" or "Food"
 enum class Category {
     FOOD, TRANSPORT, RENT, ENTERTAINMENT, SALARY, FREELANCE, OTHER
@@ -7,25 +12,30 @@ enum class Category {
 sealed interface Transaction {
     val description: String
     val amount: Double
+    val category: Category
+    val date: LocalDate
 }
 
 // Expense and Income both implement Transaction
 data class Expense(
     override val description: String,
     override val amount: Double,
-    val category: Category
+    override val category: Category,
+    override val date: LocalDate
 ) : Transaction
 
 data class Income(
     override val description: String,
     override val amount: Double,
-    val category: Category
+    override val category: Category,
+    override val date: LocalDate
 ) : Transaction
 
 fun main() {
-    val transactions = mutableListOf<Transaction>()
+    val transactions = loadTransactions().toMutableList()
 
     println("💶 Kotlin Budget Tracker")
+    println("Loaded ${transactions.size} transaction(s).")
 
     while (true) {
         println("\n--- Menu ---")
@@ -46,7 +56,8 @@ fun main() {
             "5" -> showBalance(transactions)
             "6" -> biggestExpense(transactions)
             "7" -> {
-                println("Bye!")
+                saveTransactions(transactions)
+                println("Bye! Your transactions were saved to $DATA_FILE_NAME")
                 break
             }
             else -> println("Invalid option. Please choose 1–7.")
@@ -92,14 +103,16 @@ fun addTransaction(transactions: MutableList<Transaction>, isExpense: Boolean) {
     }
 
     val category = pickCategory(isExpense)
+    val date = LocalDate.now()
 
     if (isExpense) {
-        transactions.add(Expense(desc, amount, category))
+        transactions.add(Expense(desc, amount, category, date))
     } else {
-        transactions.add(Income(desc, amount, category))
+        transactions.add(Income(desc, amount, category, date))
     }
 
-    println("✅ $type added: $desc — €${"%.2f".format(amount)} [${category.name}]")
+    saveTransactions(transactions)
+    println("✅ $type added: $desc — €${"%.2f".format(amount)} [${category.name}] on $date")
 }
 
 fun viewAll(transactions: List<Transaction>) {
@@ -112,13 +125,9 @@ fun viewAll(transactions: List<Transaction>) {
         // 'when' on a sealed interface — compiler knows all possible types
         val label = when (t) {
             is Expense -> "EXPENSE"
-            is Income  -> "INCOME "
+            is Income -> "INCOME "
         }
-        val category = when (t) {
-            is Expense -> t.category.name
-            is Income  -> t.category.name
-        }
-        println("  ${index + 1}. [$label] [${category}] ${t.description}: €${"%.2f".format(t.amount)}")
+        println("  ${index + 1}. [$label] [${t.category.name}] ${t.description}: €${"%.2f".format(t.amount)} (${t.date})")
     }
 }
 
@@ -166,5 +175,63 @@ fun biggestExpense(transactions: List<Transaction>) {
         return
     }
     val biggest = expenses.maxBy { it.amount }
-    println("\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} [${biggest.category.name}]")
+    println("\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} [${biggest.category.name}] on ${biggest.date}")
+}
+
+fun loadTransactions(): List<Transaction> {
+    val file = File(DATA_FILE_NAME)
+    if (!file.exists()) return emptyList()
+
+    return file.readLines()
+        .mapNotNull { parseTransaction(it) }
+}
+
+fun saveTransactions(transactions: List<Transaction>) {
+    val file = File(DATA_FILE_NAME)
+    file.printWriter().use { out ->
+        transactions.forEach { transaction ->
+            out.println(transactionToLine(transaction))
+        }
+    }
+}
+
+fun transactionToLine(transaction: Transaction): String {
+    val type = when (transaction) {
+        is Expense -> "EXPENSE"
+        is Income -> "INCOME"
+    }
+
+    val safeDescription = transaction.description.replace("|", "/")
+    return listOf(
+        type,
+        safeDescription,
+        transaction.amount.toString(),
+        transaction.category.name,
+        transaction.date.toString()
+    ).joinToString("|")
+}
+
+fun parseTransaction(line: String): Transaction? {
+    val parts = line.split("|", limit = 5)
+    if (parts.size != 5) return null
+
+    val type = parts[0]
+    val description = parts[1]
+    val amount = parts[2].toDoubleOrNull() ?: return null
+    val category = try {
+        Category.valueOf(parts[3])
+    } catch (_: IllegalArgumentException) {
+        return null
+    }
+    val date = try {
+        LocalDate.parse(parts[4])
+    } catch (_: Exception) {
+        return null
+    }
+
+    return when (type) {
+        "EXPENSE" -> Expense(description, amount, category, date)
+        "INCOME" -> Income(description, amount, category, date)
+        else -> null
+    }
 }
