@@ -2,6 +2,7 @@ import java.io.File
 import java.time.LocalDate
 
 const val DATA_FILE_NAME = "transactions.txt"
+const val BUDGET_FILE_NAME = "budget.txt"
 
 // Enum class: locked set of valid categories — no more typos like "fod" or "Food"
 enum class Category {
@@ -33,9 +34,15 @@ data class Income(
 
 fun main() {
     val transactions = loadTransactions().toMutableList()
+    var budgetLimit = loadBudgetLimit()
 
     println("💶 Kotlin Budget Tracker")
     println("Loaded ${transactions.size} transaction(s).")
+    if (budgetLimit != null) {
+        println("Current budget limit: €${"%.2f".format(budgetLimit)}")
+    } else {
+        println("No budget limit set yet.")
+    }
 
     while (true) {
         println("\n--- Menu ---")
@@ -45,22 +52,31 @@ fun main() {
         println("4. Summary by category")
         println("5. Balance")
         println("6. Biggest expense")
-        println("7. Exit")
+        println("7. Delete transaction")
+        println("8. Set budget limit")
+        println("9. Check budget status")
+        println("10. Exit")
         print("Choose: ")
 
         when (readln().trim()) {
-            "1" -> addTransaction(transactions, isExpense = true)
-            "2" -> addTransaction(transactions, isExpense = false)
+            "1" -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit)
+            "2" -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit)
             "3" -> viewAll(transactions)
             "4" -> summarizeByCategory(transactions)
             "5" -> showBalance(transactions)
             "6" -> biggestExpense(transactions)
-            "7" -> {
+            "7" -> deleteTransaction(transactions, budgetLimit)
+            "8" -> budgetLimit = setBudgetLimit()
+            "9" -> checkBudgetStatus(transactions, budgetLimit)
+            "10" -> {
                 saveTransactions(transactions)
+                if (budgetLimit != null) {
+                    saveBudgetLimit(budgetLimit)
+                }
                 println("Bye! Your transactions were saved to $DATA_FILE_NAME")
                 break
             }
-            else -> println("Invalid option. Please choose 1–7.")
+            else -> println("Invalid option. Please choose 1–10.")
         }
     }
 }
@@ -85,7 +101,7 @@ fun pickCategory(isExpense: Boolean): Category {
     }
 }
 
-fun addTransaction(transactions: MutableList<Transaction>, isExpense: Boolean) {
+fun addTransaction(transactions: MutableList<Transaction>, isExpense: Boolean, budgetLimit: Double?) {
     val type = if (isExpense) "Expense" else "Income"
 
     print("Description: ")
@@ -113,6 +129,10 @@ fun addTransaction(transactions: MutableList<Transaction>, isExpense: Boolean) {
 
     saveTransactions(transactions)
     println("✅ $type added: $desc — €${"%.2f".format(amount)} [${category.name}] on $date")
+
+    if (isExpense && budgetLimit != null) {
+        checkBudgetStatus(transactions, budgetLimit)
+    }
 }
 
 fun viewAll(transactions: List<Transaction>) {
@@ -122,7 +142,6 @@ fun viewAll(transactions: List<Transaction>) {
     }
     println("\nAll Transactions:")
     transactions.forEachIndexed { index, t ->
-        // 'when' on a sealed interface — compiler knows all possible types
         val label = when (t) {
             is Expense -> "EXPENSE"
             is Income -> "INCOME "
@@ -176,6 +195,70 @@ fun biggestExpense(transactions: List<Transaction>) {
     }
     val biggest = expenses.maxBy { it.amount }
     println("\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} [${biggest.category.name}] on ${biggest.date}")
+}
+
+fun deleteTransaction(transactions: MutableList<Transaction>, budgetLimit: Double?) {
+    if (transactions.isEmpty()) {
+        println("No transactions to delete.")
+        return
+    }
+
+    viewAll(transactions)
+    print("Enter transaction number to delete: ")
+    val index = readln().toIntOrNull()
+
+    if (index == null || index !in 1..transactions.size) {
+        println("Invalid number.")
+        return
+    }
+
+    val removed = transactions.removeAt(index - 1)
+    saveTransactions(transactions)
+
+    val type = when (removed) {
+        is Expense -> "Expense"
+        is Income -> "Income"
+    }
+
+    println("Removed $type: ${removed.description} — €${"%.2f".format(removed.amount)}")
+
+    if (budgetLimit != null) {
+        checkBudgetStatus(transactions, budgetLimit)
+    }
+}
+
+fun setBudgetLimit(): Double? {
+    print("Enter monthly budget limit (€): ")
+    val limit = readln().toDoubleOrNull()
+
+    if (limit == null || limit <= 0) {
+        println("Invalid budget amount. Please enter a positive number.")
+        return null
+    }
+
+    saveBudgetLimit(limit)
+    println("✅ Budget limit set to €${"%.2f".format(limit)}")
+    return limit
+}
+
+fun checkBudgetStatus(transactions: List<Transaction>, budgetLimit: Double?) {
+    if (budgetLimit == null) {
+        println("No budget limit set yet.")
+        return
+    }
+
+    val totalExpenses = transactions.filterIsInstance<Expense>().sumOf { it.amount }
+    val remaining = budgetLimit - totalExpenses
+
+    println("\nBudget status:")
+    println("  Budget limit:   €${"%.2f".format(budgetLimit)}")
+    println("  Total expenses: €${"%.2f".format(totalExpenses)}")
+
+    if (remaining < 0) {
+        println("  ⚠️ You are over budget by €${"%.2f".format(-remaining)}")
+    } else {
+        println("  Remaining:      €${"%.2f".format(remaining)}")
+    }
 }
 
 fun loadTransactions(): List<Transaction> {
@@ -234,4 +317,15 @@ fun parseTransaction(line: String): Transaction? {
         "INCOME" -> Income(description, amount, category, date)
         else -> null
     }
+}
+
+fun loadBudgetLimit(): Double? {
+    val file = File(BUDGET_FILE_NAME)
+    if (!file.exists()) return null
+    return file.readText().trim().toDoubleOrNull()
+}
+
+fun saveBudgetLimit(limit: Double) {
+    val file = File(BUDGET_FILE_NAME)
+    file.writeText(limit.toString())
 }
