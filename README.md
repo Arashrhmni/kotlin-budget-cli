@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, automatic dates, transaction deletion, a budget limit feature, filtering, and editing.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, automatic dates, transaction deletion, a budget limit feature, filtering, editing, monthly summaries, and sorting.
 
 ## Features
 
@@ -8,6 +8,8 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Edit a transaction by number
 - Delete transactions by number
 - Filter transactions by type, category, or description text
+- Sort transactions by date or amount
+- Show a monthly summary for the current month
 - Set a monthly budget limit and check how much you have left
 - Show a warning when your expenses go over the budget
 - Categories enforced via `enum class` for safer input
@@ -67,8 +69,10 @@ Current budget limit: €300.00
 9. Check budget status
 10. Filter transactions
 11. Edit transaction
-12. Exit
-Choose: 10
+12. Monthly summary
+13. Sort transactions
+14. Exit
+Choose: 12
 ```
 
 ## What I practiced
@@ -81,6 +85,8 @@ Choose: 10
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type
 - `contains(..., ignoreCase = true)` for simple search
+- Sorting with `sortedBy()` and `sortedByDescending()`
+- Date-based filtering for monthly summaries
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing

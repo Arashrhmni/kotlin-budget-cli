@@ -58,7 +58,9 @@ fun main() {
         println("9. Check budget status")
         println("10. Filter transactions")
         println("11. Edit transaction")
-        println("12. Exit")
+        println("12. Monthly summary")
+        println("13. Sort transactions")
+        println("14. Exit")
         print("Choose: ")
 
         when (readln().trim()) {
@@ -73,7 +75,9 @@ fun main() {
             "9" -> checkBudgetStatus(transactions, budgetLimit)
             "10" -> filterTransactions(transactions)
             "11" -> editTransaction(transactions, budgetLimit)
-            "12" -> {
+            "12" -> showMonthlySummary(transactions)
+            "13" -> sortTransactions(transactions)
+            "14" -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -81,7 +85,7 @@ fun main() {
                 println("Bye! Your transactions were saved to $DATA_FILE_NAME")
                 break
             }
-            else -> println("Invalid option. Please choose 1–12.")
+            else -> println("Invalid option. Please choose 1–14.")
         }
     }
 }
@@ -426,6 +430,61 @@ fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
         println("Invalid choice, keeping current category.")
         currentCategory
     }
+}
+
+fun showMonthlySummary(transactions: List<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions recorded yet.")
+        return
+    }
+
+    val currentDate = LocalDate.now()
+    val monthTransactions = transactions.filter {
+        it.date.year == currentDate.year && it.date.month == currentDate.month
+    }
+
+    if (monthTransactions.isEmpty()) {
+        println("No transactions found for ${currentDate.month.name} ${currentDate.year}.")
+        return
+    }
+
+    val monthlyIncome = monthTransactions.filterIsInstance<Income>().sumOf { it.amount }
+    val monthlyExpenses = monthTransactions.filterIsInstance<Expense>().sumOf { it.amount }
+    val monthlyBalance = monthlyIncome - monthlyExpenses
+
+    println("\nMonthly summary for ${currentDate.month.name} ${currentDate.year}:")
+    println("  Transactions:   ${monthTransactions.size}")
+    println("  Income:         €${"%.2f".format(monthlyIncome)}")
+    println("  Expenses:       €${"%.2f".format(monthlyExpenses)}")
+    println("  Balance:        €${"%.2f".format(monthlyBalance)}")
+}
+
+fun sortTransactions(transactions: List<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions recorded yet.")
+        return
+    }
+
+    println("\nSort Transactions")
+    println("1. Newest first")
+    println("2. Oldest first")
+    println("3. Highest amount first")
+    println("4. Lowest amount first")
+    print("Choose: ")
+
+    val sorted = when (readln().trim()) {
+        "1" -> transactions.sortedByDescending { it.date }
+        "2" -> transactions.sortedBy { it.date }
+        "3" -> transactions.sortedByDescending { it.amount }
+        "4" -> transactions.sortedBy { it.amount }
+        else -> {
+            println("Invalid option.")
+            return
+        }
+    }
+
+    println("\nSorted Transactions:")
+    printTransactionList(sorted)
 }
 
 fun loadTransactions(): List<Transaction> {
