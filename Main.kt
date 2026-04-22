@@ -4,7 +4,8 @@ import java.time.LocalDate
 const val DATA_FILE_NAME = "transactions.txt"
 const val BUDGET_FILE_NAME = "budget.txt"
 
-// Enum class: locked set of valid categories — no more typos like "fod" or "Food"
+// Enum class: locked set of valid categories
+// no more typos like "fod" or "Food"
 enum class Category {
     FOOD, TRANSPORT, RENT, ENTERTAINMENT, SALARY, FREELANCE, OTHER
 }
@@ -55,7 +56,9 @@ fun main() {
         println("7. Delete transaction")
         println("8. Set budget limit")
         println("9. Check budget status")
-        println("10. Exit")
+        println("10. Filter transactions")
+        println("11. Edit transaction")
+        println("12. Exit")
         print("Choose: ")
 
         when (readln().trim()) {
@@ -68,7 +71,9 @@ fun main() {
             "7" -> deleteTransaction(transactions, budgetLimit)
             "8" -> budgetLimit = setBudgetLimit()
             "9" -> checkBudgetStatus(transactions, budgetLimit)
-            "10" -> {
+            "10" -> filterTransactions(transactions)
+            "11" -> editTransaction(transactions, budgetLimit)
+            "12" -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -76,17 +81,13 @@ fun main() {
                 println("Bye! Your transactions were saved to $DATA_FILE_NAME")
                 break
             }
-            else -> println("Invalid option. Please choose 1–10.")
+            else -> println("Invalid option. Please choose 1–12.")
         }
     }
 }
 
 fun pickCategory(isExpense: Boolean): Category {
-    val options = if (isExpense) {
-        listOf(Category.FOOD, Category.TRANSPORT, Category.RENT, Category.ENTERTAINMENT, Category.OTHER)
-    } else {
-        listOf(Category.SALARY, Category.FREELANCE, Category.OTHER)
-    }
+    val options = getCategoryOptions(isExpense)
 
     println("Pick a category:")
     options.forEachIndexed { index, cat -> println("  ${index + 1}. ${cat.name}") }
@@ -98,6 +99,14 @@ fun pickCategory(isExpense: Boolean): Category {
     } else {
         println("Invalid choice, defaulting to OTHER.")
         Category.OTHER
+    }
+}
+
+fun getCategoryOptions(isExpense: Boolean): List<Category> {
+    return if (isExpense) {
+        listOf(Category.FOOD, Category.TRANSPORT, Category.RENT, Category.ENTERTAINMENT, Category.OTHER)
+    } else {
+        listOf(Category.SALARY, Category.FREELANCE, Category.OTHER)
     }
 }
 
@@ -140,7 +149,12 @@ fun viewAll(transactions: List<Transaction>) {
         println("No transactions recorded yet.")
         return
     }
+
     println("\nAll Transactions:")
+    printTransactionList(transactions)
+}
+
+fun printTransactionList(transactions: List<Transaction>) {
     transactions.forEachIndexed { index, t ->
         val label = when (t) {
             is Expense -> "EXPENSE"
@@ -155,23 +169,32 @@ fun summarizeByCategory(transactions: List<Transaction>) {
         println("No transactions recorded yet.")
         return
     }
+
     println("\nExpenses by Category:")
-    transactions
-        .filterIsInstance<Expense>()
-        .groupBy { it.category }
-        .forEach { (category, items) ->
-            val total = items.sumOf { it.amount }
-            println("  ${category.name}: €${"%.2f".format(total)} (${items.size} item(s))")
-        }
+    val expenses = transactions.filterIsInstance<Expense>()
+    if (expenses.isEmpty()) {
+        println("  No expenses recorded yet.")
+    } else {
+        expenses
+            .groupBy { it.category }
+            .forEach { (category, items) ->
+                val total = items.sumOf { it.amount }
+                println("  ${category.name}: €${"%.2f".format(total)} (${items.size} item(s))")
+            }
+    }
 
     println("\nIncome by Category:")
-    transactions
-        .filterIsInstance<Income>()
-        .groupBy { it.category }
-        .forEach { (category, items) ->
-            val total = items.sumOf { it.amount }
-            println("  ${category.name}: €${"%.2f".format(total)} (${items.size} item(s))")
-        }
+    val incomes = transactions.filterIsInstance<Income>()
+    if (incomes.isEmpty()) {
+        println("  No income recorded yet.")
+    } else {
+        incomes
+            .groupBy { it.category }
+            .forEach { (category, items) ->
+                val total = items.sumOf { it.amount }
+                println("  ${category.name}: €${"%.2f".format(total)} (${items.size} item(s))")
+            }
+    }
 }
 
 fun showBalance(transactions: List<Transaction>) {
@@ -193,6 +216,7 @@ fun biggestExpense(transactions: List<Transaction>) {
         println("No expenses recorded yet.")
         return
     }
+
     val biggest = expenses.maxBy { it.amount }
     println("\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} [${biggest.category.name}] on ${biggest.date}")
 }
@@ -258,6 +282,149 @@ fun checkBudgetStatus(transactions: List<Transaction>, budgetLimit: Double?) {
         println("  ⚠️ You are over budget by €${"%.2f".format(-remaining)}")
     } else {
         println("  Remaining:      €${"%.2f".format(remaining)}")
+    }
+}
+
+fun filterTransactions(transactions: List<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions recorded yet.")
+        return
+    }
+
+    println("\nFilter Transactions")
+    println("1. View only expenses")
+    println("2. View only income")
+    println("3. View by category")
+    println("4. Search by description")
+    print("Choose: ")
+
+    when (readln().trim()) {
+        "1" -> showFilteredList(transactions.filterIsInstance<Expense>(), "Expenses only")
+        "2" -> showFilteredList(transactions.filterIsInstance<Income>(), "Income only")
+        "3" -> filterByCategory(transactions)
+        "4" -> filterByDescription(transactions)
+        else -> println("Invalid option.")
+    }
+}
+
+fun showFilteredList(filtered: List<Transaction>, title: String) {
+    if (filtered.isEmpty()) {
+        println("No matching transactions found.")
+        return
+    }
+
+    println("\n$title:")
+    printTransactionList(filtered)
+}
+
+fun filterByCategory(transactions: List<Transaction>) {
+    println("Pick a category to filter by:")
+    Category.entries.forEachIndexed { index, category ->
+        println("  ${index + 1}. ${category.name}")
+    }
+    print("Choose: ")
+
+    val choice = readln().toIntOrNull()
+    if (choice == null || choice !in 1..Category.entries.size) {
+        println("Invalid choice.")
+        return
+    }
+
+    val selectedCategory = Category.entries[choice - 1]
+    val filtered = transactions.filter { it.category == selectedCategory }
+    showFilteredList(filtered, "Transactions in ${selectedCategory.name}")
+}
+
+fun filterByDescription(transactions: List<Transaction>) {
+    print("Enter text to search for: ")
+    val query = readln().trim()
+
+    if (query.isEmpty()) {
+        println("Search text cannot be empty.")
+        return
+    }
+
+    val filtered = transactions.filter { it.description.contains(query, ignoreCase = true) }
+    showFilteredList(filtered, "Search results for \"$query\"")
+}
+
+fun editTransaction(transactions: MutableList<Transaction>, budgetLimit: Double?) {
+    if (transactions.isEmpty()) {
+        println("No transactions to edit.")
+        return
+    }
+
+    viewAll(transactions)
+    print("Enter transaction number to edit: ")
+    val index = readln().toIntOrNull()
+
+    if (index == null || index !in 1..transactions.size) {
+        println("Invalid number.")
+        return
+    }
+
+    val oldTransaction = transactions[index - 1]
+    val isExpense = oldTransaction is Expense
+
+    println("Editing transaction ${index}.")
+    println("Press Enter to keep the current value.")
+
+    print("New description [${oldTransaction.description}]: ")
+    val newDescriptionInput = readln().trim()
+    val newDescription = if (newDescriptionInput.isEmpty()) oldTransaction.description else newDescriptionInput
+
+    print("New amount [${"%.2f".format(oldTransaction.amount)}]: ")
+    val amountInput = readln().trim()
+    val newAmount = if (amountInput.isEmpty()) {
+        oldTransaction.amount
+    } else {
+        val parsed = amountInput.toDoubleOrNull()
+        if (parsed == null || parsed <= 0) {
+            println("Invalid amount. Edit cancelled.")
+            return
+        }
+        parsed
+    }
+
+    val newCategory = editCategory(oldTransaction.category, isExpense)
+
+    val updatedTransaction = if (isExpense) {
+        Expense(newDescription, newAmount, newCategory, oldTransaction.date)
+    } else {
+        Income(newDescription, newAmount, newCategory, oldTransaction.date)
+    }
+
+    transactions[index - 1] = updatedTransaction
+    saveTransactions(transactions)
+
+    println("✅ Transaction updated.")
+    println("Old: ${oldTransaction.description} — €${"%.2f".format(oldTransaction.amount)} [${oldTransaction.category.name}] (${oldTransaction.date})")
+    println("New: ${updatedTransaction.description} — €${"%.2f".format(updatedTransaction.amount)} [${updatedTransaction.category.name}] (${updatedTransaction.date})")
+
+    if (budgetLimit != null) {
+        checkBudgetStatus(transactions, budgetLimit)
+    }
+}
+
+fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
+    val options = getCategoryOptions(isExpense)
+
+    println("Current category: ${currentCategory.name}")
+    println("Choose a new category or press Enter to keep it:")
+    options.forEachIndexed { index, category ->
+        println("  ${index + 1}. ${category.name}")
+    }
+    print("Choose: ")
+
+    val input = readln().trim()
+    if (input.isEmpty()) return currentCategory
+
+    val choice = input.toIntOrNull()
+    return if (choice != null && choice in 1..options.size) {
+        options[choice - 1]
+    } else {
+        println("Invalid choice, keeping current category.")
+        currentCategory
     }
 }
 
