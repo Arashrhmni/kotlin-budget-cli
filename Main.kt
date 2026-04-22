@@ -3,6 +3,7 @@ import java.time.LocalDate
 
 const val DATA_FILE_NAME = "transactions.txt"
 const val BUDGET_FILE_NAME = "budget.txt"
+const val CATEGORY_BUDGETS_FILE_NAME = "category_budgets.txt"
 
 // Enum class: locked set of valid categories
 // no more typos like "fod" or "Food"
@@ -36,6 +37,7 @@ data class Income(
 fun main() {
     val transactions = loadTransactions().toMutableList()
     var budgetLimit = loadBudgetLimit()
+    val categoryBudgets = loadCategoryBudgets().toMutableMap()
 
     println("💶 Kotlin Budget Tracker")
     println("Loaded ${transactions.size} transaction(s).")
@@ -43,6 +45,12 @@ fun main() {
         println("Current budget limit: €${"%.2f".format(budgetLimit)}")
     } else {
         println("No budget limit set yet.")
+    }
+
+    if (categoryBudgets.isNotEmpty()) {
+        println("Loaded ${categoryBudgets.size} category budget(s).")
+    } else {
+        println("No category budgets set yet.")
     }
 
     while (true) {
@@ -60,49 +68,36 @@ fun main() {
         println("11. Edit transaction")
         println("12. Monthly summary")
         println("13. Sort transactions")
-        println("14. Exit")
-        print("Choose: ")
+        println("14. Set category budget")
+        println("15. Check category budgets")
+        println("16. Exit")
 
-        when (readln().trim()) {
-            "1" -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit)
-            "2" -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit)
-            "3" -> viewAll(transactions)
-            "4" -> summarizeByCategory(transactions)
-            "5" -> showBalance(transactions)
-            "6" -> biggestExpense(transactions)
-            "7" -> deleteTransaction(transactions, budgetLimit)
-            "8" -> budgetLimit = setBudgetLimit()
-            "9" -> checkBudgetStatus(transactions, budgetLimit)
-            "10" -> filterTransactions(transactions)
-            "11" -> editTransaction(transactions, budgetLimit)
-            "12" -> showMonthlySummary(transactions)
-            "13" -> sortTransactions(transactions)
-            "14" -> {
+        when (promptChoice("Choose: ", 1..16)) {
+            1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
+            2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
+            3 -> viewAll(transactions)
+            4 -> summarizeByCategory(transactions)
+            5 -> showBalance(transactions)
+            6 -> biggestExpense(transactions)
+            7 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            8 -> budgetLimit = setBudgetLimit()
+            9 -> checkBudgetStatus(transactions, budgetLimit)
+            10 -> filterTransactions(transactions)
+            11 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            12 -> showMonthlySummary(transactions)
+            13 -> sortTransactions(transactions)
+            14 -> setCategoryBudget(categoryBudgets)
+            15 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            16 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
                 }
-                println("Bye! Your transactions were saved to $DATA_FILE_NAME")
+                saveCategoryBudgets(categoryBudgets)
+                println("Bye! Your data was saved.")
                 break
             }
-            else -> println("Invalid option. Please choose 1–14.")
         }
-    }
-}
-
-fun pickCategory(isExpense: Boolean): Category {
-    val options = getCategoryOptions(isExpense)
-
-    println("Pick a category:")
-    options.forEachIndexed { index, cat -> println("  ${index + 1}. ${cat.name}") }
-    print("Choose: ")
-
-    val choice = readln().toIntOrNull()
-    return if (choice != null && choice in 1..options.size) {
-        options[choice - 1]
-    } else {
-        println("Invalid choice, defaulting to OTHER.")
-        Category.OTHER
     }
 }
 
@@ -114,37 +109,109 @@ fun getCategoryOptions(isExpense: Boolean): List<Category> {
     }
 }
 
-fun addTransaction(transactions: MutableList<Transaction>, isExpense: Boolean, budgetLimit: Double?) {
-    val type = if (isExpense) "Expense" else "Income"
-
-    print("Description: ")
-    val desc = readln().trim()
-    if (desc.isEmpty()) {
-        println("Description cannot be empty.")
-        return
+fun promptChoice(prompt: String, validRange: IntRange): Int {
+    while (true) {
+        print(prompt)
+        val choice = readln().trim().toIntOrNull()
+        if (choice != null && choice in validRange) {
+            return choice
+        }
+        println("Invalid choice. Please enter a number from ${validRange.first} to ${validRange.last}.")
     }
+}
 
-    print("Amount (€): ")
-    val amount = readln().toDoubleOrNull()
-    if (amount == null || amount <= 0) {
+fun promptNonEmptyText(prompt: String): String {
+    while (true) {
+        print(prompt)
+        val input = readln().trim()
+        if (input.isNotEmpty()) return input
+        println("This field cannot be empty.")
+    }
+}
+
+fun promptPositiveDouble(prompt: String): Double {
+    while (true) {
+        print(prompt)
+        val value = readln().trim().toDoubleOrNull()
+        if (value != null && value > 0) return value
         println("Invalid amount. Please enter a positive number.")
-        return
+    }
+}
+
+fun promptOptionalPositiveDouble(prompt: String, currentValue: Double): Double {
+    while (true) {
+        print(prompt)
+        val input = readln().trim()
+        if (input.isEmpty()) return currentValue
+
+        val value = input.toDoubleOrNull()
+        if (value != null && value > 0) return value
+        println("Invalid amount. Please enter a positive number or press Enter to keep the current value.")
+    }
+}
+
+fun pickCategory(isExpense: Boolean): Category {
+    val options = getCategoryOptions(isExpense)
+
+    println("Pick a category:")
+    options.forEachIndexed { index, category ->
+        println("  ${index + 1}. ${category.name}")
     }
 
+    val choice = promptChoice("Choose: ", 1..options.size)
+    return options[choice - 1]
+}
+
+fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
+    val options = getCategoryOptions(isExpense)
+
+    println("Current category: ${currentCategory.name}")
+    println("Choose a new category or press Enter to keep it:")
+    options.forEachIndexed { index, category ->
+        println("  ${index + 1}. ${category.name}")
+    }
+
+    while (true) {
+        print("Choose: ")
+        val input = readln().trim()
+        if (input.isEmpty()) return currentCategory
+
+        val choice = input.toIntOrNull()
+        if (choice != null && choice in 1..options.size) {
+            return options[choice - 1]
+        }
+
+        println("Invalid choice. Enter a number from 1 to ${options.size}, or press Enter to keep the current category.")
+    }
+}
+
+fun addTransaction(
+    transactions: MutableList<Transaction>,
+    isExpense: Boolean,
+    budgetLimit: Double?,
+    categoryBudgets: Map<Category, Double>
+) {
+    val type = if (isExpense) "Expense" else "Income"
+    val description = promptNonEmptyText("Description: ")
+    val amount = promptPositiveDouble("Amount (€): ")
     val category = pickCategory(isExpense)
     val date = LocalDate.now()
 
     if (isExpense) {
-        transactions.add(Expense(desc, amount, category, date))
+        transactions.add(Expense(description, amount, category, date))
     } else {
-        transactions.add(Income(desc, amount, category, date))
+        transactions.add(Income(description, amount, category, date))
     }
 
     saveTransactions(transactions)
-    println("✅ $type added: $desc — €${"%.2f".format(amount)} [${category.name}] on $date")
+    println("✅ $type added: $description — €${"%.2f".format(amount)} [${category.name}] on $date")
 
     if (isExpense && budgetLimit != null) {
         checkBudgetStatus(transactions, budgetLimit)
+    }
+
+    if (isExpense) {
+        showCategoryBudgetStatusForCategory(transactions, category, categoryBudgets)
     }
 }
 
@@ -159,12 +226,15 @@ fun viewAll(transactions: List<Transaction>) {
 }
 
 fun printTransactionList(transactions: List<Transaction>) {
-    transactions.forEachIndexed { index, t ->
-        val label = when (t) {
+    transactions.forEachIndexed { index, transaction ->
+        val label = when (transaction) {
             is Expense -> "EXPENSE"
             is Income -> "INCOME "
         }
-        println("  ${index + 1}. [$label] [${t.category.name}] ${t.description}: €${"%.2f".format(t.amount)} (${t.date})")
+        println(
+            "  ${index + 1}. [$label] [${transaction.category.name}] ${transaction.description}: " +
+                "€${"%.2f".format(transaction.amount)} (${transaction.date})"
+        )
     }
 }
 
@@ -222,24 +292,24 @@ fun biggestExpense(transactions: List<Transaction>) {
     }
 
     val biggest = expenses.maxBy { it.amount }
-    println("\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} [${biggest.category.name}] on ${biggest.date}")
+    println(
+        "\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} " +
+            "[${biggest.category.name}] on ${biggest.date}"
+    )
 }
 
-fun deleteTransaction(transactions: MutableList<Transaction>, budgetLimit: Double?) {
+fun deleteTransaction(
+    transactions: MutableList<Transaction>,
+    budgetLimit: Double?,
+    categoryBudgets: Map<Category, Double>
+) {
     if (transactions.isEmpty()) {
         println("No transactions to delete.")
         return
     }
 
     viewAll(transactions)
-    print("Enter transaction number to delete: ")
-    val index = readln().toIntOrNull()
-
-    if (index == null || index !in 1..transactions.size) {
-        println("Invalid number.")
-        return
-    }
-
+    val index = promptChoice("Enter transaction number to delete: ", 1..transactions.size)
     val removed = transactions.removeAt(index - 1)
     saveTransactions(transactions)
 
@@ -253,17 +323,14 @@ fun deleteTransaction(transactions: MutableList<Transaction>, budgetLimit: Doubl
     if (budgetLimit != null) {
         checkBudgetStatus(transactions, budgetLimit)
     }
+
+    if (removed is Expense) {
+        showCategoryBudgetStatusForCategory(transactions, removed.category, categoryBudgets)
+    }
 }
 
-fun setBudgetLimit(): Double? {
-    print("Enter monthly budget limit (€): ")
-    val limit = readln().toDoubleOrNull()
-
-    if (limit == null || limit <= 0) {
-        println("Invalid budget amount. Please enter a positive number.")
-        return null
-    }
-
+fun setBudgetLimit(): Double {
+    val limit = promptPositiveDouble("Enter monthly budget limit (€): ")
     saveBudgetLimit(limit)
     println("✅ Budget limit set to €${"%.2f".format(limit)}")
     return limit
@@ -300,14 +367,12 @@ fun filterTransactions(transactions: List<Transaction>) {
     println("2. View only income")
     println("3. View by category")
     println("4. Search by description")
-    print("Choose: ")
 
-    when (readln().trim()) {
-        "1" -> showFilteredList(transactions.filterIsInstance<Expense>(), "Expenses only")
-        "2" -> showFilteredList(transactions.filterIsInstance<Income>(), "Income only")
-        "3" -> filterByCategory(transactions)
-        "4" -> filterByDescription(transactions)
-        else -> println("Invalid option.")
+    when (promptChoice("Choose: ", 1..4)) {
+        1 -> showFilteredList(transactions.filterIsInstance<Expense>(), "Expenses only")
+        2 -> showFilteredList(transactions.filterIsInstance<Income>(), "Income only")
+        3 -> filterByCategory(transactions)
+        4 -> filterByDescription(transactions)
     }
 }
 
@@ -323,73 +388,49 @@ fun showFilteredList(filtered: List<Transaction>, title: String) {
 
 fun filterByCategory(transactions: List<Transaction>) {
     println("Pick a category to filter by:")
-    Category.entries.forEachIndexed { index, category ->
+    val allCategories = Category.values().toList()
+    allCategories.forEachIndexed { index, category ->
         println("  ${index + 1}. ${category.name}")
     }
-    print("Choose: ")
 
-    val choice = readln().toIntOrNull()
-    if (choice == null || choice !in 1..Category.entries.size) {
-        println("Invalid choice.")
-        return
-    }
-
-    val selectedCategory = Category.entries[choice - 1]
+    val choice = promptChoice("Choose: ", 1..allCategories.size)
+    val selectedCategory = allCategories[choice - 1]
     val filtered = transactions.filter { it.category == selectedCategory }
     showFilteredList(filtered, "Transactions in ${selectedCategory.name}")
 }
 
 fun filterByDescription(transactions: List<Transaction>) {
-    print("Enter text to search for: ")
-    val query = readln().trim()
-
-    if (query.isEmpty()) {
-        println("Search text cannot be empty.")
-        return
-    }
-
+    val query = promptNonEmptyText("Enter text to search for: ")
     val filtered = transactions.filter { it.description.contains(query, ignoreCase = true) }
     showFilteredList(filtered, "Search results for \"$query\"")
 }
 
-fun editTransaction(transactions: MutableList<Transaction>, budgetLimit: Double?) {
+fun editTransaction(
+    transactions: MutableList<Transaction>,
+    budgetLimit: Double?,
+    categoryBudgets: Map<Category, Double>
+) {
     if (transactions.isEmpty()) {
         println("No transactions to edit.")
         return
     }
 
     viewAll(transactions)
-    print("Enter transaction number to edit: ")
-    val index = readln().toIntOrNull()
-
-    if (index == null || index !in 1..transactions.size) {
-        println("Invalid number.")
-        return
-    }
-
+    val index = promptChoice("Enter transaction number to edit: ", 1..transactions.size)
     val oldTransaction = transactions[index - 1]
     val isExpense = oldTransaction is Expense
 
-    println("Editing transaction ${index}.")
+    println("Editing transaction $index.")
     println("Press Enter to keep the current value.")
 
     print("New description [${oldTransaction.description}]: ")
-    val newDescriptionInput = readln().trim()
-    val newDescription = if (newDescriptionInput.isEmpty()) oldTransaction.description else newDescriptionInput
+    val descriptionInput = readln().trim()
+    val newDescription = if (descriptionInput.isEmpty()) oldTransaction.description else descriptionInput
 
-    print("New amount [${"%.2f".format(oldTransaction.amount)}]: ")
-    val amountInput = readln().trim()
-    val newAmount = if (amountInput.isEmpty()) {
+    val newAmount = promptOptionalPositiveDouble(
+        "New amount [${"%.2f".format(oldTransaction.amount)}]: ",
         oldTransaction.amount
-    } else {
-        val parsed = amountInput.toDoubleOrNull()
-        if (parsed == null || parsed <= 0) {
-            println("Invalid amount. Edit cancelled.")
-            return
-        }
-        parsed
-    }
-
+    )
     val newCategory = editCategory(oldTransaction.category, isExpense)
 
     val updatedTransaction = if (isExpense) {
@@ -402,33 +443,24 @@ fun editTransaction(transactions: MutableList<Transaction>, budgetLimit: Double?
     saveTransactions(transactions)
 
     println("✅ Transaction updated.")
-    println("Old: ${oldTransaction.description} — €${"%.2f".format(oldTransaction.amount)} [${oldTransaction.category.name}] (${oldTransaction.date})")
-    println("New: ${updatedTransaction.description} — €${"%.2f".format(updatedTransaction.amount)} [${updatedTransaction.category.name}] (${updatedTransaction.date})")
+    println(
+        "Old: ${oldTransaction.description} — €${"%.2f".format(oldTransaction.amount)} " +
+            "[${oldTransaction.category.name}] (${oldTransaction.date})"
+    )
+    println(
+        "New: ${updatedTransaction.description} — €${"%.2f".format(updatedTransaction.amount)} " +
+            "[${updatedTransaction.category.name}] (${updatedTransaction.date})"
+    )
 
     if (budgetLimit != null) {
         checkBudgetStatus(transactions, budgetLimit)
     }
-}
 
-fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
-    val options = getCategoryOptions(isExpense)
-
-    println("Current category: ${currentCategory.name}")
-    println("Choose a new category or press Enter to keep it:")
-    options.forEachIndexed { index, category ->
-        println("  ${index + 1}. ${category.name}")
+    if (oldTransaction is Expense) {
+        showCategoryBudgetStatusForCategory(transactions, oldTransaction.category, categoryBudgets)
     }
-    print("Choose: ")
-
-    val input = readln().trim()
-    if (input.isEmpty()) return currentCategory
-
-    val choice = input.toIntOrNull()
-    return if (choice != null && choice in 1..options.size) {
-        options[choice - 1]
-    } else {
-        println("Invalid choice, keeping current category.")
-        currentCategory
+    if (updatedTransaction is Expense && updatedTransaction.category != oldTransaction.category) {
+        showCategoryBudgetStatusForCategory(transactions, updatedTransaction.category, categoryBudgets)
     }
 }
 
@@ -470,29 +502,89 @@ fun sortTransactions(transactions: List<Transaction>) {
     println("2. Oldest first")
     println("3. Highest amount first")
     println("4. Lowest amount first")
-    print("Choose: ")
 
-    val sorted = when (readln().trim()) {
-        "1" -> transactions.sortedByDescending { it.date }
-        "2" -> transactions.sortedBy { it.date }
-        "3" -> transactions.sortedByDescending { it.amount }
-        "4" -> transactions.sortedBy { it.amount }
-        else -> {
-            println("Invalid option.")
-            return
-        }
+    val sorted = when (promptChoice("Choose: ", 1..4)) {
+        1 -> transactions.sortedByDescending { it.date }
+        2 -> transactions.sortedBy { it.date }
+        3 -> transactions.sortedByDescending { it.amount }
+        4 -> transactions.sortedBy { it.amount }
+        else -> transactions
     }
 
     println("\nSorted Transactions:")
     printTransactionList(sorted)
 }
 
+fun setCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
+    val expenseCategories = getCategoryOptions(isExpense = true)
+
+    println("Choose an expense category for the budget:")
+    expenseCategories.forEachIndexed { index, category ->
+        println("  ${index + 1}. ${category.name}")
+    }
+
+    val choice = promptChoice("Choose: ", 1..expenseCategories.size)
+    val selectedCategory = expenseCategories[choice - 1]
+    val limit = promptPositiveDouble("Enter budget for ${selectedCategory.name} (€): ")
+
+    categoryBudgets[selectedCategory] = limit
+    saveCategoryBudgets(categoryBudgets)
+
+    println("✅ Category budget set: ${selectedCategory.name} = €${"%.2f".format(limit)}")
+}
+
+fun checkCategoryBudgetStatus(transactions: List<Transaction>, categoryBudgets: Map<Category, Double>) {
+    if (categoryBudgets.isEmpty()) {
+        println("No category budgets set yet.")
+        return
+    }
+
+    println("\nCategory budget status:")
+    categoryBudgets.toSortedMap(compareBy { it.name }).forEach { (category, limit) ->
+        val totalExpenses = transactions
+            .filterIsInstance<Expense>()
+            .filter { it.category == category }
+            .sumOf { it.amount }
+
+        val remaining = limit - totalExpenses
+        println("  ${category.name}")
+        println("    Limit:   €${"%.2f".format(limit)}")
+        println("    Spent:   €${"%.2f".format(totalExpenses)}")
+        if (remaining < 0) {
+            println("    ⚠️ Over by €${"%.2f".format(-remaining)}")
+        } else {
+            println("    Left:    €${"%.2f".format(remaining)}")
+        }
+    }
+}
+
+fun showCategoryBudgetStatusForCategory(
+    transactions: List<Transaction>,
+    category: Category,
+    categoryBudgets: Map<Category, Double>
+) {
+    val limit = categoryBudgets[category] ?: return
+    val totalExpenses = transactions
+        .filterIsInstance<Expense>()
+        .filter { it.category == category }
+        .sumOf { it.amount }
+
+    val remaining = limit - totalExpenses
+    println("\n${category.name} budget status:")
+    println("  Limit: €${"%.2f".format(limit)}")
+    println("  Spent: €${"%.2f".format(totalExpenses)}")
+    if (remaining < 0) {
+        println("  ⚠️ You are over the ${category.name} budget by €${"%.2f".format(-remaining)}")
+    } else {
+        println("  Left:  €${"%.2f".format(remaining)}")
+    }
+}
+
 fun loadTransactions(): List<Transaction> {
     val file = File(DATA_FILE_NAME)
     if (!file.exists()) return emptyList()
 
-    return file.readLines()
-        .mapNotNull { parseTransaction(it) }
+    return file.readLines().mapNotNull { parseTransaction(it) }
 }
 
 fun saveTransactions(transactions: List<Transaction>) {
@@ -554,4 +646,34 @@ fun loadBudgetLimit(): Double? {
 fun saveBudgetLimit(limit: Double) {
     val file = File(BUDGET_FILE_NAME)
     file.writeText(limit.toString())
+}
+
+fun loadCategoryBudgets(): Map<Category, Double> {
+    val file = File(CATEGORY_BUDGETS_FILE_NAME)
+    if (!file.exists()) return emptyMap()
+
+    return file.readLines().mapNotNull { line ->
+        val parts = line.split("|", limit = 2)
+        if (parts.size != 2) return@mapNotNull null
+
+        val category = try {
+            Category.valueOf(parts[0])
+        } catch (_: IllegalArgumentException) {
+            return@mapNotNull null
+        }
+
+        val amount = parts[1].toDoubleOrNull() ?: return@mapNotNull null
+        if (amount <= 0) return@mapNotNull null
+
+        category to amount
+    }.toMap()
+}
+
+fun saveCategoryBudgets(categoryBudgets: Map<Category, Double>) {
+    val file = File(CATEGORY_BUDGETS_FILE_NAME)
+    file.printWriter().use { out ->
+        categoryBudgets.toSortedMap(compareBy { it.name }).forEach { (category, amount) ->
+            out.println("${category.name}|$amount")
+        }
+    }
 }

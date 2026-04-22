@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, automatic dates, transaction deletion, a budget limit feature, filtering, editing, monthly summaries, and sorting.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, automatic dates, deletion, editing, filtering, sorting, monthly summaries, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -10,8 +10,10 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Filter transactions by type, category, or description text
 - Sort transactions by date or amount
 - Show a monthly summary for the current month
-- Set a monthly budget limit and check how much you have left
-- Show a warning when your expenses go over the budget
+- Set a total monthly budget limit and check how much you have left
+- Set category budgets for expense categories like `FOOD` or `TRANSPORT`
+- Show category budget status and warnings when you go over a category budget
+- Better input validation for menu choices, amounts, and categories
 - Categories enforced via `enum class` for safer input
 - `sealed interface` models both `Expense` and `Income` as transaction types
 - View all transactions with type labels and dates
@@ -20,7 +22,8 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Find your biggest single expense
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
-- Save the budget limit to `budget.txt`
+- Save the total budget limit to `budget.txt`
+- Save category budgets to `category_budgets.txt`
 
 ## Getting Started
 
@@ -45,17 +48,19 @@ java -jar budget.jar
 
 ## How saving works
 
-- The app creates a file called `transactions.txt`
-- Every time you add, edit, or delete a transaction, the file is updated automatically
-- The app also saves your budget limit in `budget.txt`
-- When you restart the app, both transactions and the budget limit are loaded back in
+- The app creates a file called `transactions.txt` for all transactions
+- The app saves the total budget limit in `budget.txt`
+- The app saves category budgets in `category_budgets.txt`
+- Every time you add, edit, delete, or update a budget, the files are updated automatically
+- When you restart the app, all saved data is loaded back in
 
 ## Example session
 
 ```text
 💶 Kotlin Budget Tracker
-Loaded 2 transaction(s).
-Current budget limit: €300.00
+Loaded 3 transaction(s).
+Current budget limit: €500.00
+Loaded 2 category budget(s).
 
 --- Menu ---
 1. Add expense
@@ -71,8 +76,10 @@ Current budget limit: €300.00
 11. Edit transaction
 12. Monthly summary
 13. Sort transactions
-14. Exit
-Choose: 12
+14. Set category budget
+15. Check category budgets
+16. Exit
+Choose: 15
 ```
 
 ## What I practiced
@@ -90,4 +97,5 @@ Choose: 12
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
+- Reusable helper functions for validation
 - Function decomposition
