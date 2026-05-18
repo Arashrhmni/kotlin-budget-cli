@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, deletion, editing, filtering, sorting, selected monthly summaries, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -11,6 +11,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Filter transactions by type, category, or description text
 - Sort transactions by date or amount
 - Show a monthly summary for any selected year and month
+- Show the average expense amount
 - Set a total monthly budget limit and check how much you have left
 - Set category budgets for expense categories like `FOOD` or `TRANSPORT`
 - Show category budget status and warnings when you go over a category budget
@@ -21,6 +22,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Summarize spending and income broken down by category
 - See your current balance (total income minus total expenses)
 - Find your biggest single expense
+- Calculate your average expense
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
@@ -70,16 +72,17 @@ Loaded 2 category budget(s).
 4. Summary by category
 5. Balance
 6. Biggest expense
-7. Delete transaction
-8. Set budget limit
-9. Check budget status
-10. Filter transactions
-11. Edit transaction
-12. Monthly summary
-13. Sort transactions
-14. Set category budget
-15. Check category budgets
-16. Exit
+7. Average expense
+8. Delete transaction
+9. Set budget limit
+10. Check budget status
+11. Filter transactions
+12. Edit transaction
+13. Monthly summary
+14. Sort transactions
+15. Set category budget
+16. Check category budgets
+17. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -94,8 +97,8 @@ Date (YYYY-MM-DD) or press Enter for today: 2026-05-18
 ✅ Expense added: Groceries — €24.50 [FOOD] on 2026-05-18
 
 --- Menu ---
-12. Monthly summary
-Choose: 12
+13. Monthly summary
+Choose: 13
 
 Monthly Summary
 Enter year, for example 2026: 2026
@@ -106,6 +109,15 @@ Monthly summary for MAY 2026:
   Income:         €0.00
   Expenses:       €24.50
   Balance:        €-24.50
+
+--- Menu ---
+7. Average expense
+Choose: 7
+
+Average expense:
+  Number of expenses: 1
+  Total expenses:     €24.50
+  Average expense:   €24.50
 ```
 
 ## What I practiced
@@ -121,6 +133,7 @@ Monthly summary for MAY 2026:
 - `contains(..., ignoreCase = true)` for simple search
 - Sorting with `sortedBy()` and `sortedByDescending()`
 - Date-based filtering for selected monthly summaries
+- Average calculation using `sumOf()` and list `size`
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing

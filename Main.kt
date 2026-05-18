@@ -61,34 +61,36 @@ fun main() {
         println("4. Summary by category")
         println("5. Balance")
         println("6. Biggest expense")
-        println("7. Delete transaction")
-        println("8. Set budget limit")
-        println("9. Check budget status")
-        println("10. Filter transactions")
-        println("11. Edit transaction")
-        println("12. Monthly summary")
-        println("13. Sort transactions")
-        println("14. Set category budget")
-        println("15. Check category budgets")
-        println("16. Exit")
+        println("7. Average expense")
+        println("8. Delete transaction")
+        println("9. Set budget limit")
+        println("10. Check budget status")
+        println("11. Filter transactions")
+        println("12. Edit transaction")
+        println("13. Monthly summary")
+        println("14. Sort transactions")
+        println("15. Set category budget")
+        println("16. Check category budgets")
+        println("17. Exit")
 
-        when (promptChoice("Choose: ", 1..16)) {
+        when (promptChoice("Choose: ", 1..17)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
             4 -> summarizeByCategory(transactions)
             5 -> showBalance(transactions)
             6 -> biggestExpense(transactions)
-            7 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
-            8 -> budgetLimit = setBudgetLimit()
-            9 -> checkBudgetStatus(transactions, budgetLimit)
-            10 -> filterTransactions(transactions)
-            11 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            12 -> showMonthlySummary(transactions)
-            13 -> sortTransactions(transactions)
-            14 -> setCategoryBudget(categoryBudgets)
-            15 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            16 -> {
+            7 -> showAverageExpense(transactions)
+            8 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            9 -> budgetLimit = setBudgetLimit()
+            10 -> checkBudgetStatus(transactions, budgetLimit)
+            11 -> filterTransactions(transactions)
+            12 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            13 -> showMonthlySummary(transactions)
+            14 -> sortTransactions(transactions)
+            15 -> setCategoryBudget(categoryBudgets)
+            16 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            17 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -310,6 +312,22 @@ fun biggestExpense(transactions: List<Transaction>) {
         "\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} " +
             "[${biggest.category.name}] on ${biggest.date}"
     )
+}
+
+fun showAverageExpense(transactions: List<Transaction>) {
+    val expenses = transactions.filterIsInstance<Expense>()
+    if (expenses.isEmpty()) {
+        println("No expenses recorded yet.")
+        return
+    }
+
+    val totalExpenses = expenses.sumOf { it.amount }
+    val averageExpense = totalExpenses / expenses.size
+
+    println("\nAverage expense:")
+    println("  Number of expenses: ${expenses.size}")
+    println("  Total expenses:     €${"%.2f".format(totalExpenses)}")
+    println("  Average expense:   €${"%.2f".format(averageExpense)}")
 }
 
 fun deleteTransaction(
