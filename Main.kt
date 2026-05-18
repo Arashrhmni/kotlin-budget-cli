@@ -485,13 +485,17 @@ fun showMonthlySummary(transactions: List<Transaction>) {
         return
     }
 
-    val currentDate = LocalDate.now()
+    println("\nMonthly Summary")
+    val year = promptChoice("Enter year, for example 2026: ", 1900..3000)
+    val month = promptChoice("Enter month (1-12): ", 1..12)
+    val selectedMonth = LocalDate.of(year, month, 1).month
+
     val monthTransactions = transactions.filter {
-        it.date.year == currentDate.year && it.date.month == currentDate.month
+        it.date.year == year && it.date.monthValue == month
     }
 
     if (monthTransactions.isEmpty()) {
-        println("No transactions found for ${currentDate.month.name} ${currentDate.year}.")
+        println("No transactions found for ${selectedMonth.name} $year.")
         return
     }
 
@@ -499,7 +503,7 @@ fun showMonthlySummary(transactions: List<Transaction>) {
     val monthlyExpenses = monthTransactions.filterIsInstance<Expense>().sumOf { it.amount }
     val monthlyBalance = monthlyIncome - monthlyExpenses
 
-    println("\nMonthly summary for ${currentDate.month.name} ${currentDate.year}:")
+    println("\nMonthly summary for ${selectedMonth.name} $year:")
     println("  Transactions:   ${monthTransactions.size}")
     println("  Income:         €${"%.2f".format(monthlyIncome)}")
     println("  Expenses:       €${"%.2f".format(monthlyExpenses)}")
