@@ -150,6 +150,20 @@ fun promptOptionalPositiveDouble(prompt: String, currentValue: Double): Double {
     }
 }
 
+fun promptDate(prompt: String, defaultDate: LocalDate): LocalDate {
+    while (true) {
+        print(prompt)
+        val input = readln().trim()
+        if (input.isEmpty()) return defaultDate
+
+        try {
+            return LocalDate.parse(input)
+        } catch (_: Exception) {
+            println("Invalid date. Please use the format YYYY-MM-DD, for example 2026-05-18.")
+        }
+    }
+}
+
 fun pickCategory(isExpense: Boolean): Category {
     val options = getCategoryOptions(isExpense)
 
@@ -195,7 +209,7 @@ fun addTransaction(
     val description = promptNonEmptyText("Description: ")
     val amount = promptPositiveDouble("Amount (€): ")
     val category = pickCategory(isExpense)
-    val date = LocalDate.now()
+    val date = promptDate("Date (YYYY-MM-DD) or press Enter for today: ", LocalDate.now())
 
     if (isExpense) {
         transactions.add(Expense(description, amount, category, date))
@@ -432,11 +446,12 @@ fun editTransaction(
         oldTransaction.amount
     )
     val newCategory = editCategory(oldTransaction.category, isExpense)
+    val newDate = promptDate("New date [${oldTransaction.date}] (YYYY-MM-DD): ", oldTransaction.date)
 
     val updatedTransaction = if (isExpense) {
-        Expense(newDescription, newAmount, newCategory, oldTransaction.date)
+        Expense(newDescription, newAmount, newCategory, newDate)
     } else {
-        Income(newDescription, newAmount, newCategory, oldTransaction.date)
+        Income(newDescription, newAmount, newCategory, newDate)
     }
 
     transactions[index - 1] = updatedTransaction

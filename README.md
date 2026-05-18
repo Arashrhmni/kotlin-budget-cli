@@ -1,11 +1,12 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, automatic dates, deletion, editing, filtering, sorting, monthly summaries, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, deletion, editing, filtering, sorting, monthly summaries, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
-- Add expenses and income with a description, amount, category, and automatic date
-- Edit a transaction by number
+- Add expenses and income with a description, amount, category, and date
+- Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
+- Edit a transaction by number, including the date
 - Delete transactions by number
 - Filter transactions by type, category, or description text
 - Sort transactions by date or amount
@@ -79,7 +80,18 @@ Loaded 2 category budget(s).
 14. Set category budget
 15. Check category budgets
 16. Exit
-Choose: 15
+Choose: 1
+Description: Groceries
+Amount (€): 24.50
+Pick a category:
+  1. FOOD
+  2. TRANSPORT
+  3. RENT
+  4. ENTERTAINMENT
+  5. OTHER
+Choose: 1
+Date (YYYY-MM-DD) or press Enter for today: 2026-05-18
+✅ Expense added: Groceries — €24.50 [FOOD] on 2026-05-18
 ```
 
 ## What I practiced
@@ -87,7 +99,8 @@ Choose: 15
 - `data class` for structured data
 - `enum class` for locked, type-safe category options
 - `sealed interface` to model a closed set of transaction types (`Expense`, `Income`)
-- `LocalDate` for automatic transaction dates
+- `LocalDate` for transaction dates
+- `LocalDate.parse()` for custom date input
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type
