@@ -1,5 +1,6 @@
 import java.io.File
 import java.time.LocalDate
+import java.time.Month
 
 const val DATA_FILE_NAME = "transactions.txt"
 const val BUDGET_FILE_NAME = "budget.txt"
@@ -11,12 +12,18 @@ enum class Category {
     FOOD, TRANSPORT, RENT, ENTERTAINMENT, SALARY, FREELANCE, OTHER
 }
 
+// Enum class: locked set of valid payment methods
+enum class PaymentMethod {
+    CASH, CARD, PAYPAL, BANK_TRANSFER, OTHER
+}
+
 // Sealed interface: defines the contract for all transaction types
 sealed interface Transaction {
     val description: String
     val amount: Double
     val category: Category
     val date: LocalDate
+    val paymentMethod: PaymentMethod
 }
 
 // Expense and Income both implement Transaction
@@ -24,14 +31,16 @@ data class Expense(
     override val description: String,
     override val amount: Double,
     override val category: Category,
-    override val date: LocalDate
+    override val date: LocalDate,
+    override val paymentMethod: PaymentMethod
 ) : Transaction
 
 data class Income(
     override val description: String,
     override val amount: Double,
     override val category: Category,
-    override val date: LocalDate
+    override val date: LocalDate,
+    override val paymentMethod: PaymentMethod
 ) : Transaction
 
 fun main() {
@@ -166,12 +175,35 @@ fun promptDate(prompt: String, defaultDate: LocalDate): LocalDate {
     }
 }
 
+fun promptYear(prompt: String): Int {
+    while (true) {
+        print(prompt)
+        val year = readln().trim().toIntOrNull()
+        if (year != null && year in 1900..2100) {
+            return year
+        }
+        println("Invalid year. Please enter a year between 1900 and 2100.")
+    }
+}
+
 fun pickCategory(isExpense: Boolean): Category {
     val options = getCategoryOptions(isExpense)
 
     println("Pick a category:")
     options.forEachIndexed { index, category ->
         println("  ${index + 1}. ${category.name}")
+    }
+
+    val choice = promptChoice("Choose: ", 1..options.size)
+    return options[choice - 1]
+}
+
+fun pickPaymentMethod(): PaymentMethod {
+    val options = PaymentMethod.values().toList()
+
+    println("Pick a payment method:")
+    options.forEachIndexed { index, paymentMethod ->
+        println("  ${index + 1}. ${paymentMethod.name}")
     }
 
     val choice = promptChoice("Choose: ", 1..options.size)
@@ -201,6 +233,29 @@ fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
     }
 }
 
+fun editPaymentMethod(currentPaymentMethod: PaymentMethod): PaymentMethod {
+    val options = PaymentMethod.values().toList()
+
+    println("Current payment method: ${currentPaymentMethod.name}")
+    println("Choose a new payment method or press Enter to keep it:")
+    options.forEachIndexed { index, paymentMethod ->
+        println("  ${index + 1}. ${paymentMethod.name}")
+    }
+
+    while (true) {
+        print("Choose: ")
+        val input = readln().trim()
+        if (input.isEmpty()) return currentPaymentMethod
+
+        val choice = input.toIntOrNull()
+        if (choice != null && choice in 1..options.size) {
+            return options[choice - 1]
+        }
+
+        println("Invalid choice. Enter a number from 1 to ${options.size}, or press Enter to keep the current payment method.")
+    }
+}
+
 fun addTransaction(
     transactions: MutableList<Transaction>,
     isExpense: Boolean,
@@ -212,15 +267,19 @@ fun addTransaction(
     val amount = promptPositiveDouble("Amount (€): ")
     val category = pickCategory(isExpense)
     val date = promptDate("Date (YYYY-MM-DD) or press Enter for today: ", LocalDate.now())
+    val paymentMethod = pickPaymentMethod()
 
     if (isExpense) {
-        transactions.add(Expense(description, amount, category, date))
+        transactions.add(Expense(description, amount, category, date, paymentMethod))
     } else {
-        transactions.add(Income(description, amount, category, date))
+        transactions.add(Income(description, amount, category, date, paymentMethod))
     }
 
     saveTransactions(transactions)
-    println("✅ $type added: $description — €${"%.2f".format(amount)} [${category.name}] on $date")
+    println(
+        "✅ $type added: $description — €${"%.2f".format(amount)} " +
+            "[${category.name}] [${paymentMethod.name}] on $date"
+    )
 
     if (isExpense && budgetLimit != null) {
         checkBudgetStatus(transactions, budgetLimit)
@@ -248,8 +307,8 @@ fun printTransactionList(transactions: List<Transaction>) {
             is Income -> "INCOME "
         }
         println(
-            "  ${index + 1}. [$label] [${transaction.category.name}] ${transaction.description}: " +
-                "€${"%.2f".format(transaction.amount)} (${transaction.date})"
+            "  ${index + 1}. [$label] [${transaction.category.name}] [${transaction.paymentMethod.name}] " +
+                "${transaction.description}: €${"%.2f".format(transaction.amount)} (${transaction.date})"
         )
     }
 }
@@ -310,7 +369,7 @@ fun biggestExpense(transactions: List<Transaction>) {
     val biggest = expenses.maxBy { it.amount }
     println(
         "\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} " +
-            "[${biggest.category.name}] on ${biggest.date}"
+            "[${biggest.category.name}] [${biggest.paymentMethod.name}] on ${biggest.date}"
     )
 }
 
@@ -327,7 +386,7 @@ fun showAverageExpense(transactions: List<Transaction>) {
     println("\nAverage expense:")
     println("  Number of expenses: ${expenses.size}")
     println("  Total expenses:     €${"%.2f".format(totalExpenses)}")
-    println("  Average expense:   €${"%.2f".format(averageExpense)}")
+    println("  Average expense:    €${"%.2f".format(averageExpense)}")
 }
 
 fun deleteTransaction(
@@ -464,12 +523,13 @@ fun editTransaction(
         oldTransaction.amount
     )
     val newCategory = editCategory(oldTransaction.category, isExpense)
-    val newDate = promptDate("New date [${oldTransaction.date}] (YYYY-MM-DD): ", oldTransaction.date)
+    val newDate = promptDate("New date [${oldTransaction.date}] or press Enter to keep it: ", oldTransaction.date)
+    val newPaymentMethod = editPaymentMethod(oldTransaction.paymentMethod)
 
     val updatedTransaction = if (isExpense) {
-        Expense(newDescription, newAmount, newCategory, newDate)
+        Expense(newDescription, newAmount, newCategory, newDate, newPaymentMethod)
     } else {
-        Income(newDescription, newAmount, newCategory, newDate)
+        Income(newDescription, newAmount, newCategory, newDate, newPaymentMethod)
     }
 
     transactions[index - 1] = updatedTransaction
@@ -478,11 +538,11 @@ fun editTransaction(
     println("✅ Transaction updated.")
     println(
         "Old: ${oldTransaction.description} — €${"%.2f".format(oldTransaction.amount)} " +
-            "[${oldTransaction.category.name}] (${oldTransaction.date})"
+            "[${oldTransaction.category.name}] [${oldTransaction.paymentMethod.name}] (${oldTransaction.date})"
     )
     println(
         "New: ${updatedTransaction.description} — €${"%.2f".format(updatedTransaction.amount)} " +
-            "[${updatedTransaction.category.name}] (${updatedTransaction.date})"
+            "[${updatedTransaction.category.name}] [${updatedTransaction.paymentMethod.name}] (${updatedTransaction.date})"
     )
 
     if (budgetLimit != null) {
@@ -503,13 +563,12 @@ fun showMonthlySummary(transactions: List<Transaction>) {
         return
     }
 
-    println("\nMonthly Summary")
-    val year = promptChoice("Enter year, for example 2026: ", 1900..3000)
-    val month = promptChoice("Enter month (1-12): ", 1..12)
-    val selectedMonth = LocalDate.of(year, month, 1).month
+    val year = promptYear("Enter year, for example 2026: ")
+    val monthNumber = promptChoice("Enter month (1-12): ", 1..12)
+    val selectedMonth = Month.of(monthNumber)
 
     val monthTransactions = transactions.filter {
-        it.date.year == year && it.date.monthValue == month
+        it.date.year == year && it.date.month == selectedMonth
     }
 
     if (monthTransactions.isEmpty()) {
@@ -645,13 +704,14 @@ fun transactionToLine(transaction: Transaction): String {
         safeDescription,
         transaction.amount.toString(),
         transaction.category.name,
-        transaction.date.toString()
+        transaction.date.toString(),
+        transaction.paymentMethod.name
     ).joinToString("|")
 }
 
 fun parseTransaction(line: String): Transaction? {
-    val parts = line.split("|", limit = 5)
-    if (parts.size != 5) return null
+    val parts = line.split("|", limit = 6)
+    if (parts.size != 5 && parts.size != 6) return null
 
     val type = parts[0]
     val description = parts[1]
@@ -666,10 +726,19 @@ fun parseTransaction(line: String): Transaction? {
     } catch (_: Exception) {
         return null
     }
+    val paymentMethod = if (parts.size == 6) {
+        try {
+            PaymentMethod.valueOf(parts[5])
+        } catch (_: IllegalArgumentException) {
+            PaymentMethod.OTHER
+        }
+    } else {
+        PaymentMethod.OTHER
+    }
 
     return when (type) {
-        "EXPENSE" -> Expense(description, amount, category, date)
-        "INCOME" -> Income(description, amount, category, date)
+        "EXPENSE" -> Expense(description, amount, category, date, paymentMethod)
+        "INCOME" -> Income(description, amount, category, date, paymentMethod)
         else -> null
     }
 }

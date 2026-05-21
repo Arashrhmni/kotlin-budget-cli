@@ -1,28 +1,29 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
-- Add expenses and income with a description, amount, category, and date
+- Add expenses and income with a description, amount, category, date, and payment method
 - Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
-- Edit a transaction by number, including the date
+- Pick a payment method from `CASH`, `CARD`, `PAYPAL`, `BANK_TRANSFER`, or `OTHER`
+- Edit a transaction by number, including the date and payment method
 - Delete transactions by number
 - Filter transactions by type, category, or description text
 - Sort transactions by date or amount
-- Show a monthly summary for any selected year and month
+- Show a monthly summary for a selected year and month
 - Show the average expense amount
 - Set a total monthly budget limit and check how much you have left
 - Set category budgets for expense categories like `FOOD` or `TRANSPORT`
 - Show category budget status and warnings when you go over a category budget
-- Better input validation for menu choices, amounts, and categories
+- Better input validation for menu choices, amounts, dates, categories, and payment methods
 - Categories enforced via `enum class` for safer input
+- Payment methods enforced via `enum class` for safer input
 - `sealed interface` models both `Expense` and `Income` as transaction types
-- View all transactions with type labels and dates
+- View all transactions with type labels, categories, payment methods, and dates
 - Summarize spending and income broken down by category
 - See your current balance (total income minus total expenses)
 - Find your biggest single expense
-- Calculate your average expense
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
@@ -56,6 +57,7 @@ java -jar budget.jar
 - The app saves category budgets in `category_budgets.txt`
 - Every time you add, edit, delete, or update a budget, the files are updated automatically
 - When you restart the app, all saved data is loaded back in
+- Older saved transactions without a payment method are still loaded, and their payment method is set to `OTHER`
 
 ## Example session
 
@@ -94,46 +96,58 @@ Pick a category:
   5. OTHER
 Choose: 1
 Date (YYYY-MM-DD) or press Enter for today: 2026-05-18
-✅ Expense added: Groceries — €24.50 [FOOD] on 2026-05-18
+Pick a payment method:
+  1. CASH
+  2. CARD
+  3. PAYPAL
+  4. BANK_TRANSFER
+  5. OTHER
+Choose: 2
+✅ Expense added: Groceries — €24.50 [FOOD] [CARD] on 2026-05-18
+```
 
---- Menu ---
-13. Monthly summary
+## Example monthly summary
+
+```text
 Choose: 13
-
-Monthly Summary
 Enter year, for example 2026: 2026
 Enter month (1-12): 5
 
 Monthly summary for MAY 2026:
-  Transactions:   1
-  Income:         €0.00
-  Expenses:       €24.50
-  Balance:        €-24.50
+  Transactions:   4
+  Income:         €1200.00
+  Expenses:       €340.00
+  Balance:        €860.00
+```
 
---- Menu ---
-7. Average expense
+## Example average expense
+
+```text
 Choose: 7
 
 Average expense:
-  Number of expenses: 1
-  Total expenses:     €24.50
-  Average expense:   €24.50
+  Number of expenses: 3
+  Total expenses:     €90.00
+  Average expense:    €30.00
 ```
 
 ## What I practiced
 
 - `data class` for structured data
 - `enum class` for locked, type-safe category options
+- `enum class` for locked, type-safe payment method options
 - `sealed interface` to model a closed set of transaction types (`Expense`, `Income`)
 - `LocalDate` for transaction dates
 - `LocalDate.parse()` for custom date input
+- `Month.of()` for selected monthly summaries
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
+- Backward-compatible file loading for older transaction lines
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type
 - `contains(..., ignoreCase = true)` for simple search
 - Sorting with `sortedBy()` and `sortedByDescending()`
-- Date-based filtering for selected monthly summaries
-- Average calculation using `sumOf()` and list `size`
+- Date-based filtering for monthly summaries
+- Simple average calculation
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
