@@ -8,7 +8,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
 - Pick a payment method from `CASH`, `CARD`, `PAYPAL`, `BANK_TRANSFER`, or `OTHER`
 - Edit a transaction by number, including the date and payment method
-- Delete transactions by number
+- Delete transactions by number, with confirmation before the transaction is removed
 - Filter transactions by type, category, or description text
 - Sort transactions by date or amount
 - Show a monthly summary for a selected year and month
@@ -106,6 +106,16 @@ Choose: 2
 ✅ Expense added: Groceries — €24.50 [FOOD] [CARD] on 2026-05-18
 ```
 
+## Example delete confirmation
+
+```text
+Choose: 8
+Enter transaction number to delete: 2
+Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
+Are you sure you want to delete this transaction? (y/n): n
+Delete cancelled.
+```
+
 ## Example monthly summary
 
 ```text
@@ -151,5 +161,6 @@ Average expense:
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
+- Simple yes/no confirmation handling before deleting data
 - Reusable helper functions for validation
 - Function decomposition

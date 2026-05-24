@@ -131,6 +131,17 @@ fun promptChoice(prompt: String, validRange: IntRange): Int {
     }
 }
 
+fun promptYesNo(prompt: String): Boolean {
+    while (true) {
+        print(prompt)
+        when (readln().trim().lowercase()) {
+            "y", "yes" -> return true
+            "n", "no" -> return false
+            else -> println("Invalid answer. Please enter y or n.")
+        }
+    }
+}
+
 fun promptNonEmptyText(prompt: String): String {
     while (true) {
         print(prompt)
@@ -401,13 +412,26 @@ fun deleteTransaction(
 
     viewAll(transactions)
     val index = promptChoice("Enter transaction number to delete: ", 1..transactions.size)
-    val removed = transactions.removeAt(index - 1)
-    saveTransactions(transactions)
+    val selectedTransaction = transactions[index - 1]
 
-    val type = when (removed) {
+    val type = when (selectedTransaction) {
         is Expense -> "Expense"
         is Income -> "Income"
     }
+
+    println(
+        "Selected $type: ${selectedTransaction.description} — €${"%.2f".format(selectedTransaction.amount)} " +
+            "[${selectedTransaction.category.name}] [${selectedTransaction.paymentMethod.name}] on ${selectedTransaction.date}"
+    )
+
+    val shouldDelete = promptYesNo("Are you sure you want to delete this transaction? (y/n): ")
+    if (!shouldDelete) {
+        println("Delete cancelled.")
+        return
+    }
+
+    val removed = transactions.removeAt(index - 1)
+    saveTransactions(transactions)
 
     println("Removed $type: ${removed.description} — €${"%.2f".format(removed.amount)}")
 
