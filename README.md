@@ -7,9 +7,10 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Add expenses and income with a description, amount, category, date, and payment method
 - Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
 - Pick a payment method from `CASH`, `CARD`, `PAYPAL`, `BANK_TRANSFER`, or `OTHER`
+- Filter transactions by payment method, for example only `CARD` or only `CASH` transactions
 - Edit a transaction by number, including the date and payment method
 - Delete transactions by number, with confirmation before the transaction is removed
-- Filter transactions by type, category, or description text
+- Filter transactions by type, category, description text, or payment method
 - Sort transactions by date or amount
 - Show a monthly summary for a selected year and month
 - Show the average expense amount
@@ -125,6 +126,30 @@ Are you sure you want to delete this transaction? (y/n): n
 Delete cancelled.
 ```
 
+## Example filter by payment method
+
+```text
+Choose: 11
+
+Filter Transactions
+1. View only expenses
+2. View only income
+3. View by category
+4. Search by description
+5. View by payment method
+Choose: 5
+Pick a payment method to filter by:
+  1. CASH
+  2. CARD
+  3. PAYPAL
+  4. BANK_TRANSFER
+  5. OTHER
+Choose: 2
+
+Transactions paid with CARD:
+  1. [EXPENSE] [FOOD] [CARD] Groceries: €24.50 (2026-05-18)
+```
+
 ## Example monthly summary
 
 ```text
@@ -176,6 +201,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 - `Month.of()` for selected monthly summaries
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - CSV export with simple row creation and value escaping
+- Filtering a list by enum values such as category and payment method
 - Backward-compatible file loading for older transaction lines
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type

@@ -486,12 +486,14 @@ fun filterTransactions(transactions: List<Transaction>) {
     println("2. View only income")
     println("3. View by category")
     println("4. Search by description")
+    println("5. View by payment method")
 
-    when (promptChoice("Choose: ", 1..4)) {
+    when (promptChoice("Choose: ", 1..5)) {
         1 -> showFilteredList(transactions.filterIsInstance<Expense>(), "Expenses only")
         2 -> showFilteredList(transactions.filterIsInstance<Income>(), "Income only")
         3 -> filterByCategory(transactions)
         4 -> filterByDescription(transactions)
+        5 -> filterByPaymentMethod(transactions)
     }
 }
 
@@ -522,6 +524,19 @@ fun filterByDescription(transactions: List<Transaction>) {
     val query = promptNonEmptyText("Enter text to search for: ")
     val filtered = transactions.filter { it.description.contains(query, ignoreCase = true) }
     showFilteredList(filtered, "Search results for \"$query\"")
+}
+
+fun filterByPaymentMethod(transactions: List<Transaction>) {
+    println("Pick a payment method to filter by:")
+    val allPaymentMethods = PaymentMethod.values().toList()
+    allPaymentMethods.forEachIndexed { index, paymentMethod ->
+        println("  ${index + 1}. ${paymentMethod.name}")
+    }
+
+    val choice = promptChoice("Choose: ", 1..allPaymentMethods.size)
+    val selectedPaymentMethod = allPaymentMethods[choice - 1]
+    val filtered = transactions.filter { it.paymentMethod == selectedPaymentMethod }
+    showFilteredList(filtered, "Transactions paid with ${selectedPaymentMethod.name}")
 }
 
 fun editTransaction(
