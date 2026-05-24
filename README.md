@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, CSV export, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -13,6 +13,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Sort transactions by date or amount
 - Show a monthly summary for a selected year and month
 - Show the average expense amount
+- Export all transactions to a CSV file that can be opened in Excel
 - Set a total monthly budget limit and check how much you have left
 - Set category budgets for expense categories like `FOOD` or `TRANSPORT`
 - Show category budget status and warnings when you go over a category budget
@@ -28,6 +29,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
 - Save category budgets to `category_budgets.txt`
+- Export transactions to `transactions_export.csv`
 
 ## Getting Started
 
@@ -59,6 +61,12 @@ java -jar budget.jar
 - When you restart the app, all saved data is loaded back in
 - Older saved transactions without a payment method are still loaded, and their payment method is set to `OTHER`
 
+## How CSV export works
+
+- The app can export all saved transactions to `transactions_export.csv`
+- The CSV file contains these columns: `Type`, `Description`, `Amount`, `Category`, `Date`, and `PaymentMethod`
+- The exported file can be opened with spreadsheet tools like Excel, Google Sheets, or LibreOffice Calc
+
 ## Example session
 
 ```text
@@ -84,7 +92,8 @@ Loaded 2 category budget(s).
 14. Sort transactions
 15. Set category budget
 16. Check category budgets
-17. Exit
+17. Export transactions to CSV
+18. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -141,6 +150,21 @@ Average expense:
   Average expense:    €30.00
 ```
 
+## Example CSV export
+
+```text
+Choose: 17
+✅ Transactions exported to transactions_export.csv
+```
+
+Example CSV content:
+
+```csv
+Type,Description,Amount,Category,Date,PaymentMethod
+"EXPENSE","Groceries","24.50","FOOD","2026-05-18","CARD"
+"INCOME","Salary","1200.00","SALARY","2026-05-01","BANK_TRANSFER"
+```
+
 ## What I practiced
 
 - `data class` for structured data
@@ -151,6 +175,7 @@ Average expense:
 - `LocalDate.parse()` for custom date input
 - `Month.of()` for selected monthly summaries
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
+- CSV export with simple row creation and value escaping
 - Backward-compatible file loading for older transaction lines
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type

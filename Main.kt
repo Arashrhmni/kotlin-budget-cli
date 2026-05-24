@@ -1,10 +1,12 @@
 import java.io.File
 import java.time.LocalDate
 import java.time.Month
+import java.util.Locale
 
 const val DATA_FILE_NAME = "transactions.txt"
 const val BUDGET_FILE_NAME = "budget.txt"
 const val CATEGORY_BUDGETS_FILE_NAME = "category_budgets.txt"
+const val CSV_EXPORT_FILE_NAME = "transactions_export.csv"
 
 // Enum class: locked set of valid categories
 // no more typos like "fod" or "Food"
@@ -80,9 +82,10 @@ fun main() {
         println("14. Sort transactions")
         println("15. Set category budget")
         println("16. Check category budgets")
-        println("17. Exit")
+        println("17. Export transactions to CSV")
+        println("18. Exit")
 
-        when (promptChoice("Choose: ", 1..17)) {
+        when (promptChoice("Choose: ", 1..18)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -99,7 +102,8 @@ fun main() {
             14 -> sortTransactions(transactions)
             15 -> setCategoryBudget(categoryBudgets)
             16 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            17 -> {
+            17 -> exportTransactionsToCsv(transactions)
+            18 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -698,6 +702,44 @@ fun showCategoryBudgetStatusForCategory(
     } else {
         println("  Left:  €${"%.2f".format(remaining)}")
     }
+}
+
+
+fun exportTransactionsToCsv(transactions: List<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions to export.")
+        return
+    }
+
+    val file = File(CSV_EXPORT_FILE_NAME)
+    file.printWriter().use { out ->
+        out.println("Type,Description,Amount,Category,Date,PaymentMethod")
+
+        transactions.forEach { transaction ->
+            val type = when (transaction) {
+                is Expense -> "EXPENSE"
+                is Income -> "INCOME"
+            }
+
+            val row = listOf(
+                type,
+                transaction.description,
+                "%.2f".format(Locale.US, transaction.amount),
+                transaction.category.name,
+                transaction.date.toString(),
+                transaction.paymentMethod.name
+            )
+
+            out.println(row.joinToString(",") { csvValue(it) })
+        }
+    }
+
+    println("✅ Transactions exported to $CSV_EXPORT_FILE_NAME")
+}
+
+fun csvValue(value: String): String {
+    val escaped = value.replace("\"", "\"\"")
+    return "\"$escaped\""
 }
 
 fun loadTransactions(): List<Transaction> {
