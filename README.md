@@ -8,6 +8,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
 - Pick a payment method from `CASH`, `CARD`, `PAYPAL`, `BANK_TRANSFER`, or `OTHER`
 - Filter transactions by payment method, for example only `CARD` or only `CASH` transactions
+- Summarize expenses and income broken down by payment method
 - Edit a transaction by number, including the date and payment method
 - Delete transactions by number, with confirmation before the transaction is removed
 - Filter transactions by type, category, description text, or payment method
@@ -24,6 +25,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - `sealed interface` models both `Expense` and `Income` as transaction types
 - View all transactions with type labels, categories, payment methods, and dates
 - Summarize spending and income broken down by category
+- Summarize spending and income broken down by payment method
 - See your current balance (total income minus total expenses)
 - Find your biggest single expense
 - Automatically save transactions to `transactions.txt`
@@ -81,20 +83,21 @@ Loaded 2 category budget(s).
 2. Add income
 3. View all transactions
 4. Summary by category
-5. Balance
-6. Biggest expense
-7. Average expense
-8. Delete transaction
-9. Set budget limit
-10. Check budget status
-11. Filter transactions
-12. Edit transaction
-13. Monthly summary
-14. Sort transactions
-15. Set category budget
-16. Check category budgets
-17. Export transactions to CSV
-18. Exit
+5. Summary by payment method
+6. Balance
+7. Biggest expense
+8. Average expense
+9. Delete transaction
+10. Set budget limit
+11. Check budget status
+12. Filter transactions
+13. Edit transaction
+14. Monthly summary
+15. Sort transactions
+16. Set category budget
+17. Check category budgets
+18. Export transactions to CSV
+19. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -119,7 +122,7 @@ Choose: 2
 ## Example delete confirmation
 
 ```text
-Choose: 8
+Choose: 9
 Enter transaction number to delete: 2
 Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
 Are you sure you want to delete this transaction? (y/n): n
@@ -129,7 +132,7 @@ Delete cancelled.
 ## Example filter by payment method
 
 ```text
-Choose: 11
+Choose: 12
 
 Filter Transactions
 1. View only expenses
@@ -150,10 +153,23 @@ Transactions paid with CARD:
   1. [EXPENSE] [FOOD] [CARD] Groceries: €24.50 (2026-05-18)
 ```
 
+## Example summary by payment method
+
+```text
+Choose: 5
+
+Expenses by Payment Method:
+  CARD: €24.50 (1 item(s))
+  CASH: €8.00 (2 item(s))
+
+Income by Payment Method:
+  BANK_TRANSFER: €1200.00 (1 item(s))
+```
+
 ## Example monthly summary
 
 ```text
-Choose: 13
+Choose: 14
 Enter year, for example 2026: 2026
 Enter month (1-12): 5
 
@@ -167,7 +183,7 @@ Monthly summary for MAY 2026:
 ## Example average expense
 
 ```text
-Choose: 7
+Choose: 8
 
 Average expense:
   Number of expenses: 3
@@ -178,7 +194,7 @@ Average expense:
 ## Example CSV export
 
 ```text
-Choose: 17
+Choose: 18
 ✅ Transactions exported to transactions_export.csv
 ```
 
@@ -202,6 +218,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - CSV export with simple row creation and value escaping
 - Filtering a list by enum values such as category and payment method
+- Grouping transactions by payment method with `groupBy`
 - Backward-compatible file loading for older transaction lines
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type

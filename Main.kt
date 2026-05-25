@@ -70,40 +70,42 @@ fun main() {
         println("2. Add income")
         println("3. View all transactions")
         println("4. Summary by category")
-        println("5. Balance")
-        println("6. Biggest expense")
-        println("7. Average expense")
-        println("8. Delete transaction")
-        println("9. Set budget limit")
-        println("10. Check budget status")
-        println("11. Filter transactions")
-        println("12. Edit transaction")
-        println("13. Monthly summary")
-        println("14. Sort transactions")
-        println("15. Set category budget")
-        println("16. Check category budgets")
-        println("17. Export transactions to CSV")
-        println("18. Exit")
+        println("5. Summary by payment method")
+        println("6. Balance")
+        println("7. Biggest expense")
+        println("8. Average expense")
+        println("9. Delete transaction")
+        println("10. Set budget limit")
+        println("11. Check budget status")
+        println("12. Filter transactions")
+        println("13. Edit transaction")
+        println("14. Monthly summary")
+        println("15. Sort transactions")
+        println("16. Set category budget")
+        println("17. Check category budgets")
+        println("18. Export transactions to CSV")
+        println("19. Exit")
 
-        when (promptChoice("Choose: ", 1..18)) {
+        when (promptChoice("Choose: ", 1..19)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
             4 -> summarizeByCategory(transactions)
-            5 -> showBalance(transactions)
-            6 -> biggestExpense(transactions)
-            7 -> showAverageExpense(transactions)
-            8 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
-            9 -> budgetLimit = setBudgetLimit()
-            10 -> checkBudgetStatus(transactions, budgetLimit)
-            11 -> filterTransactions(transactions)
-            12 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            13 -> showMonthlySummary(transactions)
-            14 -> sortTransactions(transactions)
-            15 -> setCategoryBudget(categoryBudgets)
-            16 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            17 -> exportTransactionsToCsv(transactions)
-            18 -> {
+            5 -> summarizeByPaymentMethod(transactions)
+            6 -> showBalance(transactions)
+            7 -> biggestExpense(transactions)
+            8 -> showAverageExpense(transactions)
+            9 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            10 -> budgetLimit = setBudgetLimit()
+            11 -> checkBudgetStatus(transactions, budgetLimit)
+            12 -> filterTransactions(transactions)
+            13 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            14 -> showMonthlySummary(transactions)
+            15 -> sortTransactions(transactions)
+            16 -> setCategoryBudget(categoryBudgets)
+            17 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            18 -> exportTransactionsToCsv(transactions)
+            19 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -357,6 +359,43 @@ fun summarizeByCategory(transactions: List<Transaction>) {
             .forEach { (category, items) ->
                 val total = items.sumOf { it.amount }
                 println("  ${category.name}: €${"%.2f".format(total)} (${items.size} item(s))")
+            }
+    }
+}
+
+fun summarizeByPaymentMethod(transactions: List<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions recorded yet.")
+        return
+    }
+
+    println("\nExpenses by Payment Method:")
+    val expenses = transactions.filterIsInstance<Expense>()
+    if (expenses.isEmpty()) {
+        println("  No expenses recorded yet.")
+    } else {
+        expenses
+            .groupBy { it.paymentMethod }
+            .entries
+            .sortedBy { it.key.name }
+            .forEach { (paymentMethod, items) ->
+                val total = items.sumOf { it.amount }
+                println("  ${paymentMethod.name}: €${"%.2f".format(total)} (${items.size} item(s))")
+            }
+    }
+
+    println("\nIncome by Payment Method:")
+    val incomes = transactions.filterIsInstance<Income>()
+    if (incomes.isEmpty()) {
+        println("  No income recorded yet.")
+    } else {
+        incomes
+            .groupBy { it.paymentMethod }
+            .entries
+            .sortedBy { it.key.name }
+            .forEach { (paymentMethod, items) ->
+                val total = items.sumOf { it.amount }
+                println("  ${paymentMethod.name}: €${"%.2f".format(total)} (${items.size} item(s))")
             }
     }
 }
