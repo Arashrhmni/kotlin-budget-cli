@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, CSV export, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -16,6 +16,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Show a monthly summary for a selected year and month
 - Show the average expense amount
 - Export all transactions to a CSV file that can be opened in Excel
+- Clear all transactions with a strong `DELETE` confirmation
 - Set a total monthly budget limit and check how much you have left
 - Set category budgets for expense categories like `FOOD` or `TRANSPORT`
 - Show category budget status and warnings when you go over a category budget
@@ -62,6 +63,7 @@ java -jar budget.jar
 - The app saves category budgets in `category_budgets.txt`
 - Every time you add, edit, delete, or update a budget, the files are updated automatically
 - When you restart the app, all saved data is loaded back in
+- Clearing all transactions only empties `transactions.txt`; the budget files stay saved
 - Older saved transactions without a payment method are still loaded, and their payment method is set to `OTHER`
 
 ## How CSV export works
@@ -97,7 +99,8 @@ Loaded 2 category budget(s).
 16. Set category budget
 17. Check category budgets
 18. Export transactions to CSV
-19. Exit
+19. Clear all transactions
+20. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -206,6 +209,18 @@ Type,Description,Amount,Category,Date,PaymentMethod
 "INCOME","Salary","1200.00","SALARY","2026-05-01","BANK_TRANSFER"
 ```
 
+## Example clear all transactions
+
+```text
+Choose: 19
+
+Clear all transactions
+This will delete all 4 saved transaction(s).
+Your budget limit and category budgets will stay saved.
+Type DELETE to confirm: DELETE
+✅ All transactions were cleared.
+```
+
 ## What I practiced
 
 - `data class` for structured data
@@ -217,6 +232,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 - `Month.of()` for selected monthly summaries
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - CSV export with simple row creation and value escaping
+- Clearing a mutable list with `clear()`
 - Filtering a list by enum values such as category and payment method
 - Grouping transactions by payment method with `groupBy`
 - Backward-compatible file loading for older transaction lines

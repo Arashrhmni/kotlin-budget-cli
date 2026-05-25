@@ -84,9 +84,10 @@ fun main() {
         println("16. Set category budget")
         println("17. Check category budgets")
         println("18. Export transactions to CSV")
-        println("19. Exit")
+        println("19. Clear all transactions")
+        println("20. Exit")
 
-        when (promptChoice("Choose: ", 1..19)) {
+        when (promptChoice("Choose: ", 1..20)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -105,7 +106,8 @@ fun main() {
             16 -> setCategoryBudget(categoryBudgets)
             17 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
             18 -> exportTransactionsToCsv(transactions)
-            19 -> {
+            19 -> clearAllTransactions(transactions)
+            20 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -485,6 +487,28 @@ fun deleteTransaction(
     if (removed is Expense) {
         showCategoryBudgetStatusForCategory(transactions, removed.category, categoryBudgets)
     }
+}
+
+fun clearAllTransactions(transactions: MutableList<Transaction>) {
+    if (transactions.isEmpty()) {
+        println("No transactions to clear.")
+        return
+    }
+
+    println("\nClear all transactions")
+    println("This will delete all ${transactions.size} saved transaction(s).")
+    println("Your budget limit and category budgets will stay saved.")
+
+    print("Type DELETE to confirm: ")
+    val confirmation = readln().trim()
+    if (confirmation != "DELETE") {
+        println("Clear all cancelled.")
+        return
+    }
+
+    transactions.clear()
+    saveTransactions(transactions)
+    println("✅ All transactions were cleared.")
 }
 
 fun setBudgetLimit(): Double {
