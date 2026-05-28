@@ -75,20 +75,21 @@ fun main() {
         println("7. Biggest expense")
         println("8. Smallest expense")
         println("9. Average expense")
-        println("10. Delete transaction")
-        println("11. Set budget limit")
-        println("12. Check budget status")
-        println("13. Filter transactions")
-        println("14. Edit transaction")
-        println("15. Monthly summary")
-        println("16. Sort transactions")
-        println("17. Set category budget")
-        println("18. Check category budgets")
-        println("19. Export transactions to CSV")
-        println("20. Clear all transactions")
-        println("21. Exit")
+        println("10. Transaction count summary")
+        println("11. Delete transaction")
+        println("12. Set budget limit")
+        println("13. Check budget status")
+        println("14. Filter transactions")
+        println("15. Edit transaction")
+        println("16. Monthly summary")
+        println("17. Sort transactions")
+        println("18. Set category budget")
+        println("19. Check category budgets")
+        println("20. Export transactions to CSV")
+        println("21. Clear all transactions")
+        println("22. Exit")
 
-        when (promptChoice("Choose: ", 1..21)) {
+        when (promptChoice("Choose: ", 1..22)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -98,18 +99,19 @@ fun main() {
             7 -> biggestExpense(transactions)
             8 -> smallestExpense(transactions)
             9 -> showAverageExpense(transactions)
-            10 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
-            11 -> budgetLimit = setBudgetLimit()
-            12 -> checkBudgetStatus(transactions, budgetLimit)
-            13 -> filterTransactions(transactions)
-            14 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            15 -> showMonthlySummary(transactions)
-            16 -> sortTransactions(transactions)
-            17 -> setCategoryBudget(categoryBudgets)
-            18 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            19 -> exportTransactionsToCsv(transactions)
-            20 -> clearAllTransactions(transactions)
-            21 -> {
+            10 -> showTransactionCountSummary(transactions)
+            11 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            12 -> budgetLimit = setBudgetLimit()
+            13 -> checkBudgetStatus(transactions, budgetLimit)
+            14 -> filterTransactions(transactions)
+            15 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            16 -> showMonthlySummary(transactions)
+            17 -> sortTransactions(transactions)
+            18 -> setCategoryBudget(categoryBudgets)
+            19 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            20 -> exportTransactionsToCsv(transactions)
+            21 -> clearAllTransactions(transactions)
+            22 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -440,8 +442,7 @@ fun smallestExpense(transactions: List<Transaction>) {
 
     val smallest = expenses.minBy { it.amount }
     println(
-        "
-Smallest expense: ${smallest.description} — €${"%.2f".format(smallest.amount)} " +
+        "\nSmallest expense: ${smallest.description} — €${"%.2f".format(smallest.amount)} " +
             "[${smallest.category.name}] [${smallest.paymentMethod.name}] on ${smallest.date}"
     )
 }
@@ -460,6 +461,16 @@ fun showAverageExpense(transactions: List<Transaction>) {
     println("  Number of expenses: ${expenses.size}")
     println("  Total expenses:     €${"%.2f".format(totalExpenses)}")
     println("  Average expense:    €${"%.2f".format(averageExpense)}")
+}
+
+fun showTransactionCountSummary(transactions: List<Transaction>) {
+    val expenses = transactions.filterIsInstance<Expense>()
+    val incomes = transactions.filterIsInstance<Income>()
+
+    println("\nTransaction count summary:")
+    println("  Expenses: ${expenses.size}")
+    println("  Income:   ${incomes.size}")
+    println("  Total:    ${transactions.size}")
 }
 
 fun deleteTransaction(

@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, transaction count summary, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -16,6 +16,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Show a monthly summary for a selected year and month
 - Find your smallest single expense
 - Show the average expense amount
+- Show how many expenses, income transactions, and total transactions are saved
 - Export all transactions to a CSV file that can be opened in Excel
 - Clear all transactions with a strong `DELETE` confirmation
 - Set a total monthly budget limit and check how much you have left
@@ -31,6 +32,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - See your current balance (total income minus total expenses)
 - Find your biggest single expense
 - Find your smallest single expense
+- Count how many expenses, income transactions, and total transactions are saved
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
@@ -92,18 +94,19 @@ Loaded 2 category budget(s).
 7. Biggest expense
 8. Smallest expense
 9. Average expense
-10. Delete transaction
-11. Set budget limit
-12. Check budget status
-13. Filter transactions
-14. Edit transaction
-15. Monthly summary
-16. Sort transactions
-17. Set category budget
-18. Check category budgets
-19. Export transactions to CSV
-20. Clear all transactions
-21. Exit
+10. Transaction count summary
+11. Delete transaction
+12. Set budget limit
+13. Check budget status
+14. Filter transactions
+15. Edit transaction
+16. Monthly summary
+17. Sort transactions
+18. Set category budget
+19. Check category budgets
+20. Export transactions to CSV
+21. Clear all transactions
+22. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -128,7 +131,7 @@ Choose: 2
 ## Example delete confirmation
 
 ```text
-Choose: 10
+Choose: 11
 Enter transaction number to delete: 2
 Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
 Are you sure you want to delete this transaction? (y/n): n
@@ -138,7 +141,7 @@ Delete cancelled.
 ## Example filter by payment method
 
 ```text
-Choose: 13
+Choose: 14
 
 Filter Transactions
 1. View only expenses
@@ -175,7 +178,7 @@ Income by Payment Method:
 ## Example monthly summary
 
 ```text
-Choose: 15
+Choose: 16
 Enter year, for example 2026: 2026
 Enter month (1-12): 5
 
@@ -205,10 +208,21 @@ Average expense:
   Average expense:    €30.00
 ```
 
+## Example transaction count summary
+
+```text
+Choose: 10
+
+Transaction count summary:
+  Expenses: 3
+  Income:   1
+  Total:    4
+```
+
 ## Example CSV export
 
 ```text
-Choose: 19
+Choose: 20
 ✅ Transactions exported to transactions_export.csv
 ```
 
@@ -223,7 +237,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 ## Example clear all transactions
 
 ```text
-Choose: 20
+Choose: 21
 
 Clear all transactions
 This will delete all 4 saved transaction(s).
@@ -254,6 +268,7 @@ Type DELETE to confirm: DELETE
 - Date-based filtering for monthly summaries
 - Finding the smallest value in a list with `minBy`
 - Simple average calculation
+- Counting list items with `.size`
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
