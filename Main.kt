@@ -73,21 +73,22 @@ fun main() {
         println("5. Summary by payment method")
         println("6. Balance")
         println("7. Biggest expense")
-        println("8. Average expense")
-        println("9. Delete transaction")
-        println("10. Set budget limit")
-        println("11. Check budget status")
-        println("12. Filter transactions")
-        println("13. Edit transaction")
-        println("14. Monthly summary")
-        println("15. Sort transactions")
-        println("16. Set category budget")
-        println("17. Check category budgets")
-        println("18. Export transactions to CSV")
-        println("19. Clear all transactions")
-        println("20. Exit")
+        println("8. Smallest expense")
+        println("9. Average expense")
+        println("10. Delete transaction")
+        println("11. Set budget limit")
+        println("12. Check budget status")
+        println("13. Filter transactions")
+        println("14. Edit transaction")
+        println("15. Monthly summary")
+        println("16. Sort transactions")
+        println("17. Set category budget")
+        println("18. Check category budgets")
+        println("19. Export transactions to CSV")
+        println("20. Clear all transactions")
+        println("21. Exit")
 
-        when (promptChoice("Choose: ", 1..20)) {
+        when (promptChoice("Choose: ", 1..21)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -95,19 +96,20 @@ fun main() {
             5 -> summarizeByPaymentMethod(transactions)
             6 -> showBalance(transactions)
             7 -> biggestExpense(transactions)
-            8 -> showAverageExpense(transactions)
-            9 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
-            10 -> budgetLimit = setBudgetLimit()
-            11 -> checkBudgetStatus(transactions, budgetLimit)
-            12 -> filterTransactions(transactions)
-            13 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            14 -> showMonthlySummary(transactions)
-            15 -> sortTransactions(transactions)
-            16 -> setCategoryBudget(categoryBudgets)
-            17 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            18 -> exportTransactionsToCsv(transactions)
-            19 -> clearAllTransactions(transactions)
-            20 -> {
+            8 -> smallestExpense(transactions)
+            9 -> showAverageExpense(transactions)
+            10 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            11 -> budgetLimit = setBudgetLimit()
+            12 -> checkBudgetStatus(transactions, budgetLimit)
+            13 -> filterTransactions(transactions)
+            14 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            15 -> showMonthlySummary(transactions)
+            16 -> sortTransactions(transactions)
+            17 -> setCategoryBudget(categoryBudgets)
+            18 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            19 -> exportTransactionsToCsv(transactions)
+            20 -> clearAllTransactions(transactions)
+            21 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -426,6 +428,21 @@ fun biggestExpense(transactions: List<Transaction>) {
     println(
         "\nBiggest expense: ${biggest.description} — €${"%.2f".format(biggest.amount)} " +
             "[${biggest.category.name}] [${biggest.paymentMethod.name}] on ${biggest.date}"
+    )
+}
+
+fun smallestExpense(transactions: List<Transaction>) {
+    val expenses = transactions.filterIsInstance<Expense>()
+    if (expenses.isEmpty()) {
+        println("No expenses recorded yet.")
+        return
+    }
+
+    val smallest = expenses.minBy { it.amount }
+    println(
+        "
+Smallest expense: ${smallest.description} — €${"%.2f".format(smallest.amount)} " +
+            "[${smallest.category.name}] [${smallest.paymentMethod.name}] on ${smallest.date}"
     )
 }
 

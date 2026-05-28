@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, average expense calculation, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -14,6 +14,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Filter transactions by type, category, description text, or payment method
 - Sort transactions by date or amount
 - Show a monthly summary for a selected year and month
+- Find your smallest single expense
 - Show the average expense amount
 - Export all transactions to a CSV file that can be opened in Excel
 - Clear all transactions with a strong `DELETE` confirmation
@@ -29,6 +30,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Summarize spending and income broken down by payment method
 - See your current balance (total income minus total expenses)
 - Find your biggest single expense
+- Find your smallest single expense
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
@@ -88,19 +90,20 @@ Loaded 2 category budget(s).
 5. Summary by payment method
 6. Balance
 7. Biggest expense
-8. Average expense
-9. Delete transaction
-10. Set budget limit
-11. Check budget status
-12. Filter transactions
-13. Edit transaction
-14. Monthly summary
-15. Sort transactions
-16. Set category budget
-17. Check category budgets
-18. Export transactions to CSV
-19. Clear all transactions
-20. Exit
+8. Smallest expense
+9. Average expense
+10. Delete transaction
+11. Set budget limit
+12. Check budget status
+13. Filter transactions
+14. Edit transaction
+15. Monthly summary
+16. Sort transactions
+17. Set category budget
+18. Check category budgets
+19. Export transactions to CSV
+20. Clear all transactions
+21. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -125,7 +128,7 @@ Choose: 2
 ## Example delete confirmation
 
 ```text
-Choose: 9
+Choose: 10
 Enter transaction number to delete: 2
 Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
 Are you sure you want to delete this transaction? (y/n): n
@@ -135,7 +138,7 @@ Delete cancelled.
 ## Example filter by payment method
 
 ```text
-Choose: 12
+Choose: 13
 
 Filter Transactions
 1. View only expenses
@@ -172,7 +175,7 @@ Income by Payment Method:
 ## Example monthly summary
 
 ```text
-Choose: 14
+Choose: 15
 Enter year, for example 2026: 2026
 Enter month (1-12): 5
 
@@ -183,10 +186,18 @@ Monthly summary for MAY 2026:
   Balance:        €860.00
 ```
 
-## Example average expense
+## Example smallest expense
 
 ```text
 Choose: 8
+
+Smallest expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
+```
+
+## Example average expense
+
+```text
+Choose: 9
 
 Average expense:
   Number of expenses: 3
@@ -197,7 +208,7 @@ Average expense:
 ## Example CSV export
 
 ```text
-Choose: 18
+Choose: 19
 ✅ Transactions exported to transactions_export.csv
 ```
 
@@ -212,7 +223,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 ## Example clear all transactions
 
 ```text
-Choose: 19
+Choose: 20
 
 Clear all transactions
 This will delete all 4 saved transaction(s).
@@ -241,6 +252,7 @@ Type DELETE to confirm: DELETE
 - `contains(..., ignoreCase = true)` for simple search
 - Sorting with `sortedBy()` and `sortedByDescending()`
 - Date-based filtering for monthly summaries
+- Finding the smallest value in a list with `minBy`
 - Simple average calculation
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
