@@ -65,57 +65,16 @@ fun main() {
     }
 
     while (true) {
-        println("\n--- Menu ---")
-        println("1. Add expense")
-        println("2. Add income")
-        println("3. View all transactions")
-        println("4. Summary by category")
-        println("5. Summary by payment method")
-        println("6. Balance")
-        println("7. Biggest expense")
-        println("8. Smallest expense")
-        println("9. Average expense")
-        println("10. Transaction count summary")
-        println("11. Delete transaction")
-        println("12. Set budget limit")
-        println("13. Remove budget limit")
-        println("14. Check budget status")
-        println("15. Filter transactions")
-        println("16. Edit transaction")
-        println("17. Monthly summary")
-        println("18. Sort transactions")
-        println("19. Set category budget")
-        println("20. Remove category budget")
-        println("21. Check category budgets")
-        println("22. Export transactions to CSV")
-        println("23. Clear all transactions")
-        println("24. Exit")
+        printMainMenu()
 
-        when (promptChoice("Choose: ", 1..24)) {
-            1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
-            2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
-            3 -> viewAll(transactions)
-            4 -> summarizeByCategory(transactions)
-            5 -> summarizeByPaymentMethod(transactions)
-            6 -> showBalance(transactions)
-            7 -> biggestExpense(transactions)
-            8 -> smallestExpense(transactions)
-            9 -> showAverageExpense(transactions)
-            10 -> showTransactionCountSummary(transactions)
-            11 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
-            12 -> budgetLimit = setBudgetLimit()
-            13 -> budgetLimit = removeBudgetLimit(budgetLimit)
-            14 -> checkBudgetStatus(transactions, budgetLimit)
-            15 -> filterTransactions(transactions)
-            16 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            17 -> showMonthlySummary(transactions)
-            18 -> sortTransactions(transactions)
-            19 -> setCategoryBudget(categoryBudgets)
-            20 -> removeCategoryBudget(categoryBudgets)
-            21 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            22 -> exportTransactionsToCsv(transactions)
-            23 -> clearAllTransactions(transactions)
-            24 -> {
+        when (promptChoice("Choose: ", 1..7)) {
+            1 -> showAddTransactionMenu(transactions, budgetLimit, categoryBudgets)
+            2 -> showViewTransactionsMenu(transactions)
+            3 -> showReportsMenu(transactions)
+            4 -> budgetLimit = showBudgetMenu(transactions, budgetLimit, categoryBudgets)
+            5 -> exportTransactionsToCsv(transactions)
+            6 -> showDeleteMenu(transactions, budgetLimit, categoryBudgets)
+            7 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -126,6 +85,128 @@ fun main() {
                 println("Bye! Your data was saved.")
                 break
             }
+        }
+    }
+}
+
+fun printMainMenu() {
+    println("\n--- Main Menu ---")
+    println("1. Add transaction")
+    println("2. View and search transactions")
+    println("3. Reports and summaries")
+    println("4. Manage budgets")
+    println("5. Export data")
+    println("6. Delete or clear data")
+    println("7. Exit")
+}
+
+fun showAddTransactionMenu(
+    transactions: MutableList<Transaction>,
+    budgetLimit: Double?,
+    categoryBudgets: Map<Category, Double>
+) {
+    while (true) {
+        println("\n--- Add Transaction ---")
+        println("1. Add expense")
+        println("2. Add income")
+        println("3. Back to main menu")
+
+        when (promptChoice("Choose: ", 1..3)) {
+            1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
+            2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
+            3 -> return
+        }
+    }
+}
+
+fun showViewTransactionsMenu(transactions: List<Transaction>) {
+    while (true) {
+        println("\n--- View and Search Transactions ---")
+        println("1. View all transactions")
+        println("2. Filter transactions")
+        println("3. Sort transactions")
+        println("4. Back to main menu")
+
+        when (promptChoice("Choose: ", 1..4)) {
+            1 -> viewAll(transactions)
+            2 -> filterTransactions(transactions)
+            3 -> sortTransactions(transactions)
+            4 -> return
+        }
+    }
+}
+
+fun showReportsMenu(transactions: List<Transaction>) {
+    while (true) {
+        println("\n--- Reports and Summaries ---")
+        println("1. Summary by category")
+        println("2. Summary by payment method")
+        println("3. Balance")
+        println("4. Biggest expense")
+        println("5. Smallest expense")
+        println("6. Average expense")
+        println("7. Transaction count summary")
+        println("8. Monthly summary")
+        println("9. Back to main menu")
+
+        when (promptChoice("Choose: ", 1..9)) {
+            1 -> summarizeByCategory(transactions)
+            2 -> summarizeByPaymentMethod(transactions)
+            3 -> showBalance(transactions)
+            4 -> biggestExpense(transactions)
+            5 -> smallestExpense(transactions)
+            6 -> showAverageExpense(transactions)
+            7 -> showTransactionCountSummary(transactions)
+            8 -> showMonthlySummary(transactions)
+            9 -> return
+        }
+    }
+}
+
+fun showBudgetMenu(
+    transactions: List<Transaction>,
+    budgetLimit: Double?,
+    categoryBudgets: MutableMap<Category, Double>
+): Double? {
+    var updatedBudgetLimit = budgetLimit
+
+    while (true) {
+        println("\n--- Manage Budgets ---")
+        println("1. Set budget limit")
+        println("2. Remove budget limit")
+        println("3. Check budget status")
+        println("4. Set category budget")
+        println("5. Remove category budget")
+        println("6. Check category budgets")
+        println("7. Back to main menu")
+
+        when (promptChoice("Choose: ", 1..7)) {
+            1 -> updatedBudgetLimit = setBudgetLimit()
+            2 -> updatedBudgetLimit = removeBudgetLimit(updatedBudgetLimit)
+            3 -> checkBudgetStatus(transactions, updatedBudgetLimit)
+            4 -> setCategoryBudget(categoryBudgets)
+            5 -> removeCategoryBudget(categoryBudgets)
+            6 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            7 -> return updatedBudgetLimit
+        }
+    }
+}
+
+fun showDeleteMenu(
+    transactions: MutableList<Transaction>,
+    budgetLimit: Double?,
+    categoryBudgets: Map<Category, Double>
+) {
+    while (true) {
+        println("\n--- Delete or Clear Data ---")
+        println("1. Delete one transaction")
+        println("2. Clear all transactions")
+        println("3. Back to main menu")
+
+        when (promptChoice("Choose: ", 1..3)) {
+            1 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
+            2 -> clearAllTransactions(transactions)
+            3 -> return
         }
     }
 }
