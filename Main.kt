@@ -85,12 +85,13 @@ fun main() {
         println("17. Monthly summary")
         println("18. Sort transactions")
         println("19. Set category budget")
-        println("20. Check category budgets")
-        println("21. Export transactions to CSV")
-        println("22. Clear all transactions")
-        println("23. Exit")
+        println("20. Remove category budget")
+        println("21. Check category budgets")
+        println("22. Export transactions to CSV")
+        println("23. Clear all transactions")
+        println("24. Exit")
 
-        when (promptChoice("Choose: ", 1..23)) {
+        when (promptChoice("Choose: ", 1..24)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -110,10 +111,11 @@ fun main() {
             17 -> showMonthlySummary(transactions)
             18 -> sortTransactions(transactions)
             19 -> setCategoryBudget(categoryBudgets)
-            20 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            21 -> exportTransactionsToCsv(transactions)
-            22 -> clearAllTransactions(transactions)
-            23 -> {
+            20 -> removeCategoryBudget(categoryBudgets)
+            21 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            22 -> exportTransactionsToCsv(transactions)
+            23 -> clearAllTransactions(transactions)
+            24 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
@@ -783,6 +785,36 @@ fun setCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
     saveCategoryBudgets(categoryBudgets)
 
     println("✅ Category budget set: ${selectedCategory.name} = €${"%.2f".format(limit)}")
+}
+
+fun removeCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
+    if (categoryBudgets.isEmpty()) {
+        println("No category budgets set yet.")
+        return
+    }
+
+    val categoriesWithBudgets = categoryBudgets.keys.sortedBy { it.name }
+
+    println("Choose a category budget to remove:")
+    categoriesWithBudgets.forEachIndexed { index, category ->
+        val limit = categoryBudgets[category] ?: 0.0
+        println("  ${index + 1}. ${category.name} — €${"%.2f".format(limit)}")
+    }
+
+    val choice = promptChoice("Choose: ", 1..categoriesWithBudgets.size)
+    val selectedCategory = categoriesWithBudgets[choice - 1]
+    val selectedLimit = categoryBudgets[selectedCategory] ?: 0.0
+
+    println("Selected category budget: ${selectedCategory.name} — €${"%.2f".format(selectedLimit)}")
+    val shouldRemove = promptYesNo("Are you sure you want to remove this category budget? (y/n): ")
+    if (!shouldRemove) {
+        println("Remove category budget cancelled.")
+        return
+    }
+
+    categoryBudgets.remove(selectedCategory)
+    saveCategoryBudgets(categoryBudgets)
+    println("✅ Category budget removed: ${selectedCategory.name}")
 }
 
 fun checkCategoryBudgetStatus(transactions: List<Transaction>, categoryBudgets: Map<Category, Double>) {
