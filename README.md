@@ -1,6 +1,6 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, transaction count summary, CSV export, clear-all confirmation, a total budget limit, category budgets, and stronger input validation.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, transaction count summary, CSV export, clear-all confirmation, a removable total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
@@ -20,6 +20,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Export all transactions to a CSV file that can be opened in Excel
 - Clear all transactions with a strong `DELETE` confirmation
 - Set a total monthly budget limit and check how much you have left
+- Remove the total monthly budget limit again
 - Set category budgets for expense categories like `FOOD` or `TRANSPORT`
 - Show category budget status and warnings when you go over a category budget
 - Better input validation for menu choices, amounts, dates, categories, and payment methods
@@ -36,6 +37,7 @@ A command-line budget tracking tool written in Kotlin. Built as a learning proje
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
+- Remove `budget.txt` again when the budget limit is removed
 - Save category budgets to `category_budgets.txt`
 - Export transactions to `transactions_export.csv`
 
@@ -64,6 +66,7 @@ java -jar budget.jar
 
 - The app creates a file called `transactions.txt` for all transactions
 - The app saves the total budget limit in `budget.txt`
+- If the budget limit is removed, `budget.txt` is deleted
 - The app saves category budgets in `category_budgets.txt`
 - Every time you add, edit, delete, or update a budget, the files are updated automatically
 - When you restart the app, all saved data is loaded back in
@@ -97,16 +100,17 @@ Loaded 2 category budget(s).
 10. Transaction count summary
 11. Delete transaction
 12. Set budget limit
-13. Check budget status
-14. Filter transactions
-15. Edit transaction
-16. Monthly summary
-17. Sort transactions
-18. Set category budget
-19. Check category budgets
-20. Export transactions to CSV
-21. Clear all transactions
-22. Exit
+13. Remove budget limit
+14. Check budget status
+15. Filter transactions
+16. Edit transaction
+17. Monthly summary
+18. Sort transactions
+19. Set category budget
+20. Check category budgets
+21. Export transactions to CSV
+22. Clear all transactions
+23. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -138,10 +142,19 @@ Are you sure you want to delete this transaction? (y/n): n
 Delete cancelled.
 ```
 
+## Example remove budget limit
+
+```text
+Choose: 13
+Current budget limit: €500.00
+Are you sure you want to remove the budget limit? (y/n): y
+✅ Budget limit removed.
+```
+
 ## Example filter by payment method
 
 ```text
-Choose: 14
+Choose: 15
 
 Filter Transactions
 1. View only expenses
@@ -222,7 +235,7 @@ Transaction count summary:
 ## Example CSV export
 
 ```text
-Choose: 20
+Choose: 21
 ✅ Transactions exported to transactions_export.csv
 ```
 
@@ -237,7 +250,7 @@ Type,Description,Amount,Category,Date,PaymentMethod
 ## Example clear all transactions
 
 ```text
-Choose: 21
+Choose: 22
 
 Clear all transactions
 This will delete all 4 saved transaction(s).
@@ -258,6 +271,7 @@ Type DELETE to confirm: DELETE
 - Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - CSV export with simple row creation and value escaping
 - Clearing a mutable list with `clear()`
+- Deleting a saved file with `File.delete()`
 - Filtering a list by enum values such as category and payment method
 - Grouping transactions by payment method with `groupBy`
 - Backward-compatible file loading for older transaction lines
@@ -272,6 +286,6 @@ Type DELETE to confirm: DELETE
 - `mutableListOf` and list operations
 - Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
-- Simple yes/no confirmation handling before deleting data
+- Simple yes/no confirmation handling before deleting data or removing settings
 - Reusable helper functions for validation
 - Function decomposition

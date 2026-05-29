@@ -78,18 +78,19 @@ fun main() {
         println("10. Transaction count summary")
         println("11. Delete transaction")
         println("12. Set budget limit")
-        println("13. Check budget status")
-        println("14. Filter transactions")
-        println("15. Edit transaction")
-        println("16. Monthly summary")
-        println("17. Sort transactions")
-        println("18. Set category budget")
-        println("19. Check category budgets")
-        println("20. Export transactions to CSV")
-        println("21. Clear all transactions")
-        println("22. Exit")
+        println("13. Remove budget limit")
+        println("14. Check budget status")
+        println("15. Filter transactions")
+        println("16. Edit transaction")
+        println("17. Monthly summary")
+        println("18. Sort transactions")
+        println("19. Set category budget")
+        println("20. Check category budgets")
+        println("21. Export transactions to CSV")
+        println("22. Clear all transactions")
+        println("23. Exit")
 
-        when (promptChoice("Choose: ", 1..22)) {
+        when (promptChoice("Choose: ", 1..23)) {
             1 -> addTransaction(transactions, isExpense = true, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             2 -> addTransaction(transactions, isExpense = false, budgetLimit = budgetLimit, categoryBudgets = categoryBudgets)
             3 -> viewAll(transactions)
@@ -102,19 +103,22 @@ fun main() {
             10 -> showTransactionCountSummary(transactions)
             11 -> deleteTransaction(transactions, budgetLimit, categoryBudgets)
             12 -> budgetLimit = setBudgetLimit()
-            13 -> checkBudgetStatus(transactions, budgetLimit)
-            14 -> filterTransactions(transactions)
-            15 -> editTransaction(transactions, budgetLimit, categoryBudgets)
-            16 -> showMonthlySummary(transactions)
-            17 -> sortTransactions(transactions)
-            18 -> setCategoryBudget(categoryBudgets)
-            19 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
-            20 -> exportTransactionsToCsv(transactions)
-            21 -> clearAllTransactions(transactions)
-            22 -> {
+            13 -> budgetLimit = removeBudgetLimit(budgetLimit)
+            14 -> checkBudgetStatus(transactions, budgetLimit)
+            15 -> filterTransactions(transactions)
+            16 -> editTransaction(transactions, budgetLimit, categoryBudgets)
+            17 -> showMonthlySummary(transactions)
+            18 -> sortTransactions(transactions)
+            19 -> setCategoryBudget(categoryBudgets)
+            20 -> checkCategoryBudgetStatus(transactions, categoryBudgets)
+            21 -> exportTransactionsToCsv(transactions)
+            22 -> clearAllTransactions(transactions)
+            23 -> {
                 saveTransactions(transactions)
                 if (budgetLimit != null) {
                     saveBudgetLimit(budgetLimit)
+                } else {
+                    deleteBudgetLimit()
                 }
                 saveCategoryBudgets(categoryBudgets)
                 println("Bye! Your data was saved.")
@@ -546,6 +550,24 @@ fun setBudgetLimit(): Double {
     return limit
 }
 
+fun removeBudgetLimit(currentBudgetLimit: Double?): Double? {
+    if (currentBudgetLimit == null) {
+        println("No budget limit is set yet.")
+        return null
+    }
+
+    println("Current budget limit: €${"%.2f".format(currentBudgetLimit)}")
+    val shouldRemove = promptYesNo("Are you sure you want to remove the budget limit? (y/n): ")
+    if (!shouldRemove) {
+        println("Remove budget limit cancelled.")
+        return currentBudgetLimit
+    }
+
+    deleteBudgetLimit()
+    println("✅ Budget limit removed.")
+    return null
+}
+
 fun checkBudgetStatus(transactions: List<Transaction>, budgetLimit: Double?) {
     if (budgetLimit == null) {
         println("No budget limit set yet.")
@@ -924,6 +946,13 @@ fun loadBudgetLimit(): Double? {
 fun saveBudgetLimit(limit: Double) {
     val file = File(BUDGET_FILE_NAME)
     file.writeText(limit.toString())
+}
+
+fun deleteBudgetLimit() {
+    val file = File(BUDGET_FILE_NAME)
+    if (file.exists()) {
+        file.delete()
+    }
 }
 
 fun loadCategoryBudgets(): Map<Category, Double> {
