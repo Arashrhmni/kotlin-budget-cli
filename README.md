@@ -291,3 +291,4 @@ Type DELETE to confirm: DELETE
 - Reusable helper functions for validation
 - Function decomposition
 - Nested menus for a cleaner command-line app structure
+- Simple code comments to make the project easier to understand while learning Kotlin

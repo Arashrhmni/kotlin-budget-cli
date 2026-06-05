@@ -45,6 +45,7 @@ data class Income(
     override val paymentMethod: PaymentMethod
 ) : Transaction
 
+// Starts the app, loads saved data, and keeps showing the main menu until the user exits.
 fun main() {
     val transactions = loadTransactions().toMutableList()
     var budgetLimit = loadBudgetLimit()
@@ -89,6 +90,7 @@ fun main() {
     }
 }
 
+// Prints the first menu that sends the user to smaller submenus.
 fun printMainMenu() {
     println("\n--- Main Menu ---")
     println("1. Add transaction")
@@ -100,6 +102,7 @@ fun printMainMenu() {
     println("7. Exit")
 }
 
+// Shows the submenu for adding either an expense or an income.
 fun showAddTransactionMenu(
     transactions: MutableList<Transaction>,
     budgetLimit: Double?,
@@ -119,6 +122,7 @@ fun showAddTransactionMenu(
     }
 }
 
+// Shows the submenu for viewing, filtering, and sorting transactions.
 fun showViewTransactionsMenu(transactions: List<Transaction>) {
     while (true) {
         println("\n--- View and Search Transactions ---")
@@ -136,6 +140,7 @@ fun showViewTransactionsMenu(transactions: List<Transaction>) {
     }
 }
 
+// Shows the submenu for reports like balance, summaries, and biggest/smallest expenses.
 fun showReportsMenu(transactions: List<Transaction>) {
     while (true) {
         println("\n--- Reports and Summaries ---")
@@ -163,6 +168,7 @@ fun showReportsMenu(transactions: List<Transaction>) {
     }
 }
 
+// Shows the submenu for setting, removing, and checking budget limits.
 fun showBudgetMenu(
     transactions: List<Transaction>,
     budgetLimit: Double?,
@@ -192,6 +198,7 @@ fun showBudgetMenu(
     }
 }
 
+// Shows the submenu for deleting one transaction or clearing all transactions.
 fun showDeleteMenu(
     transactions: MutableList<Transaction>,
     budgetLimit: Double?,
@@ -211,6 +218,7 @@ fun showDeleteMenu(
     }
 }
 
+// Returns different category choices for expenses and income.
 fun getCategoryOptions(isExpense: Boolean): List<Category> {
     return if (isExpense) {
         listOf(Category.FOOD, Category.TRANSPORT, Category.RENT, Category.ENTERTAINMENT, Category.OTHER)
@@ -219,6 +227,7 @@ fun getCategoryOptions(isExpense: Boolean): List<Category> {
     }
 }
 
+// Reads a menu number and keeps asking until the number is valid.
 fun promptChoice(prompt: String, validRange: IntRange): Int {
     while (true) {
         print(prompt)
@@ -230,6 +239,7 @@ fun promptChoice(prompt: String, validRange: IntRange): Int {
     }
 }
 
+// Reads a yes/no answer and returns true for yes, false for no.
 fun promptYesNo(prompt: String): Boolean {
     while (true) {
         print(prompt)
@@ -241,6 +251,7 @@ fun promptYesNo(prompt: String): Boolean {
     }
 }
 
+// Reads text input and does not allow an empty answer.
 fun promptNonEmptyText(prompt: String): String {
     while (true) {
         print(prompt)
@@ -250,6 +261,7 @@ fun promptNonEmptyText(prompt: String): String {
     }
 }
 
+// Reads a positive number, used for amounts and budget limits.
 fun promptPositiveDouble(prompt: String): Double {
     while (true) {
         print(prompt)
@@ -259,6 +271,7 @@ fun promptPositiveDouble(prompt: String): Double {
     }
 }
 
+// Reads a new positive number, or keeps the old value if the user presses Enter.
 fun promptOptionalPositiveDouble(prompt: String, currentValue: Double): Double {
     while (true) {
         print(prompt)
@@ -271,6 +284,7 @@ fun promptOptionalPositiveDouble(prompt: String, currentValue: Double): Double {
     }
 }
 
+// Reads a date in YYYY-MM-DD format, or uses the default date when Enter is pressed.
 fun promptDate(prompt: String, defaultDate: LocalDate): LocalDate {
     while (true) {
         print(prompt)
@@ -285,6 +299,7 @@ fun promptDate(prompt: String, defaultDate: LocalDate): LocalDate {
     }
 }
 
+// Reads a year for monthly summaries and keeps it inside a simple safe range.
 fun promptYear(prompt: String): Int {
     while (true) {
         print(prompt)
@@ -296,6 +311,7 @@ fun promptYear(prompt: String): Int {
     }
 }
 
+// Lets the user choose a category from the allowed enum values.
 fun pickCategory(isExpense: Boolean): Category {
     val options = getCategoryOptions(isExpense)
 
@@ -308,6 +324,7 @@ fun pickCategory(isExpense: Boolean): Category {
     return options[choice - 1]
 }
 
+// Lets the user choose a payment method from the allowed enum values.
 fun pickPaymentMethod(): PaymentMethod {
     val options = PaymentMethod.values().toList()
 
@@ -320,6 +337,7 @@ fun pickPaymentMethod(): PaymentMethod {
     return options[choice - 1]
 }
 
+// Lets the user change the category while editing, or press Enter to keep the old one.
 fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
     val options = getCategoryOptions(isExpense)
 
@@ -343,6 +361,7 @@ fun editCategory(currentCategory: Category, isExpense: Boolean): Category {
     }
 }
 
+// Lets the user change the payment method while editing, or press Enter to keep the old one.
 fun editPaymentMethod(currentPaymentMethod: PaymentMethod): PaymentMethod {
     val options = PaymentMethod.values().toList()
 
@@ -366,6 +385,7 @@ fun editPaymentMethod(currentPaymentMethod: PaymentMethod): PaymentMethod {
     }
 }
 
+// Creates a new expense or income, adds it to the list, and saves it to the file.
 fun addTransaction(
     transactions: MutableList<Transaction>,
     isExpense: Boolean,
@@ -400,6 +420,7 @@ fun addTransaction(
     }
 }
 
+// Shows all saved transactions, or a message if the list is empty.
 fun viewAll(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -410,6 +431,7 @@ fun viewAll(transactions: List<Transaction>) {
     printTransactionList(transactions)
 }
 
+// Prints a numbered transaction list in one shared format.
 fun printTransactionList(transactions: List<Transaction>) {
     transactions.forEachIndexed { index, transaction ->
         val label = when (transaction) {
@@ -423,6 +445,7 @@ fun printTransactionList(transactions: List<Transaction>) {
     }
 }
 
+// Groups expenses and income by category and prints the totals.
 fun summarizeByCategory(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -456,6 +479,7 @@ fun summarizeByCategory(transactions: List<Transaction>) {
     }
 }
 
+// Groups expenses and income by payment method and prints the totals.
 fun summarizeByPaymentMethod(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -493,6 +517,7 @@ fun summarizeByPaymentMethod(transactions: List<Transaction>) {
     }
 }
 
+// Calculates total income minus total expenses.
 fun showBalance(transactions: List<Transaction>) {
     val totalIncome = transactions.filterIsInstance<Income>().sumOf { it.amount }
     val totalExpenses = transactions.filterIsInstance<Expense>().sumOf { it.amount }
@@ -506,6 +531,7 @@ fun showBalance(transactions: List<Transaction>) {
     println("─────────────────────────")
 }
 
+// Finds and prints the expense with the highest amount.
 fun biggestExpense(transactions: List<Transaction>) {
     val expenses = transactions.filterIsInstance<Expense>()
     if (expenses.isEmpty()) {
@@ -520,6 +546,7 @@ fun biggestExpense(transactions: List<Transaction>) {
     )
 }
 
+// Finds and prints the expense with the lowest amount.
 fun smallestExpense(transactions: List<Transaction>) {
     val expenses = transactions.filterIsInstance<Expense>()
     if (expenses.isEmpty()) {
@@ -534,6 +561,7 @@ fun smallestExpense(transactions: List<Transaction>) {
     )
 }
 
+// Calculates the average amount of all expenses.
 fun showAverageExpense(transactions: List<Transaction>) {
     val expenses = transactions.filterIsInstance<Expense>()
     if (expenses.isEmpty()) {
@@ -550,6 +578,7 @@ fun showAverageExpense(transactions: List<Transaction>) {
     println("  Average expense:    €${"%.2f".format(averageExpense)}")
 }
 
+// Counts how many expenses, income items, and total transactions exist.
 fun showTransactionCountSummary(transactions: List<Transaction>) {
     val expenses = transactions.filterIsInstance<Expense>()
     val incomes = transactions.filterIsInstance<Income>()
@@ -560,6 +589,7 @@ fun showTransactionCountSummary(transactions: List<Transaction>) {
     println("  Total:    ${transactions.size}")
 }
 
+// Deletes one selected transaction after the user confirms it.
 fun deleteTransaction(
     transactions: MutableList<Transaction>,
     budgetLimit: Double?,
@@ -604,6 +634,7 @@ fun deleteTransaction(
     }
 }
 
+// Clears all transactions only after the user types DELETE.
 fun clearAllTransactions(transactions: MutableList<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions to clear.")
@@ -626,6 +657,7 @@ fun clearAllTransactions(transactions: MutableList<Transaction>) {
     println("✅ All transactions were cleared.")
 }
 
+// Saves a new monthly budget limit.
 fun setBudgetLimit(): Double {
     val limit = promptPositiveDouble("Enter monthly budget limit (€): ")
     saveBudgetLimit(limit)
@@ -633,6 +665,7 @@ fun setBudgetLimit(): Double {
     return limit
 }
 
+// Removes the monthly budget limit and deletes its saved file.
 fun removeBudgetLimit(currentBudgetLimit: Double?): Double? {
     if (currentBudgetLimit == null) {
         println("No budget limit is set yet.")
@@ -651,6 +684,7 @@ fun removeBudgetLimit(currentBudgetLimit: Double?): Double? {
     return null
 }
 
+// Compares total expenses with the monthly budget limit.
 fun checkBudgetStatus(transactions: List<Transaction>, budgetLimit: Double?) {
     if (budgetLimit == null) {
         println("No budget limit set yet.")
@@ -671,6 +705,7 @@ fun checkBudgetStatus(transactions: List<Transaction>, budgetLimit: Double?) {
     }
 }
 
+// Shows filter choices and sends the user to the selected filter function.
 fun filterTransactions(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -693,6 +728,7 @@ fun filterTransactions(transactions: List<Transaction>) {
     }
 }
 
+// Prints filtered results or a message if nothing matched.
 fun showFilteredList(filtered: List<Transaction>, title: String) {
     if (filtered.isEmpty()) {
         println("No matching transactions found.")
@@ -703,6 +739,7 @@ fun showFilteredList(filtered: List<Transaction>, title: String) {
     printTransactionList(filtered)
 }
 
+// Shows only transactions from one selected category.
 fun filterByCategory(transactions: List<Transaction>) {
     println("Pick a category to filter by:")
     val allCategories = Category.values().toList()
@@ -716,12 +753,14 @@ fun filterByCategory(transactions: List<Transaction>) {
     showFilteredList(filtered, "Transactions in ${selectedCategory.name}")
 }
 
+// Searches transaction descriptions using simple case-insensitive text matching.
 fun filterByDescription(transactions: List<Transaction>) {
     val query = promptNonEmptyText("Enter text to search for: ")
     val filtered = transactions.filter { it.description.contains(query, ignoreCase = true) }
     showFilteredList(filtered, "Search results for \"$query\"")
 }
 
+// Shows only transactions with one selected payment method.
 fun filterByPaymentMethod(transactions: List<Transaction>) {
     println("Pick a payment method to filter by:")
     val allPaymentMethods = PaymentMethod.values().toList()
@@ -735,6 +774,7 @@ fun filterByPaymentMethod(transactions: List<Transaction>) {
     showFilteredList(filtered, "Transactions paid with ${selectedPaymentMethod.name}")
 }
 
+// Updates one selected transaction and saves the changed list.
 fun editTransaction(
     transactions: MutableList<Transaction>,
     budgetLimit: Double?,
@@ -796,6 +836,7 @@ fun editTransaction(
     }
 }
 
+// Shows income, expenses, balance, and count for a selected year and month.
 fun showMonthlySummary(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -826,6 +867,7 @@ fun showMonthlySummary(transactions: List<Transaction>) {
     println("  Balance:        €${"%.2f".format(monthlyBalance)}")
 }
 
+// Sorts transactions by date or amount and prints the sorted result.
 fun sortTransactions(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions recorded yet.")
@@ -850,6 +892,7 @@ fun sortTransactions(transactions: List<Transaction>) {
     printTransactionList(sorted)
 }
 
+// Adds or updates a budget limit for one expense category.
 fun setCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
     val expenseCategories = getCategoryOptions(isExpense = true)
 
@@ -868,6 +911,7 @@ fun setCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
     println("✅ Category budget set: ${selectedCategory.name} = €${"%.2f".format(limit)}")
 }
 
+// Removes one saved category budget after confirmation.
 fun removeCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
     if (categoryBudgets.isEmpty()) {
         println("No category budgets set yet.")
@@ -898,6 +942,7 @@ fun removeCategoryBudget(categoryBudgets: MutableMap<Category, Double>) {
     println("✅ Category budget removed: ${selectedCategory.name}")
 }
 
+// Checks all saved category budgets and shows how much is left or over.
 fun checkCategoryBudgetStatus(transactions: List<Transaction>, categoryBudgets: Map<Category, Double>) {
     if (categoryBudgets.isEmpty()) {
         println("No category budgets set yet.")
@@ -923,6 +968,7 @@ fun checkCategoryBudgetStatus(transactions: List<Transaction>, categoryBudgets: 
     }
 }
 
+// Shows the budget status for one category after adding, editing, or deleting an expense.
 fun showCategoryBudgetStatusForCategory(
     transactions: List<Transaction>,
     category: Category,
@@ -946,6 +992,7 @@ fun showCategoryBudgetStatusForCategory(
 }
 
 
+// Exports all transactions to a CSV file that can be opened in spreadsheet apps.
 fun exportTransactionsToCsv(transactions: List<Transaction>) {
     if (transactions.isEmpty()) {
         println("No transactions to export.")
@@ -978,11 +1025,13 @@ fun exportTransactionsToCsv(transactions: List<Transaction>) {
     println("✅ Transactions exported to $CSV_EXPORT_FILE_NAME")
 }
 
+// Escapes one CSV value by wrapping it in quotes and doubling inner quotes.
 fun csvValue(value: String): String {
     val escaped = value.replace("\"", "\"\"")
     return "\"$escaped\""
 }
 
+// Loads saved transactions from transactions.txt when the app starts.
 fun loadTransactions(): List<Transaction> {
     val file = File(DATA_FILE_NAME)
     if (!file.exists()) return emptyList()
@@ -990,6 +1039,7 @@ fun loadTransactions(): List<Transaction> {
     return file.readLines().mapNotNull { parseTransaction(it) }
 }
 
+// Saves all transactions to transactions.txt.
 fun saveTransactions(transactions: List<Transaction>) {
     val file = File(DATA_FILE_NAME)
     file.printWriter().use { out ->
@@ -999,6 +1049,7 @@ fun saveTransactions(transactions: List<Transaction>) {
     }
 }
 
+// Converts one transaction into one text line for saving.
 fun transactionToLine(transaction: Transaction): String {
     val type = when (transaction) {
         is Expense -> "EXPENSE"
@@ -1016,6 +1067,7 @@ fun transactionToLine(transaction: Transaction): String {
     ).joinToString("|")
 }
 
+// Converts one saved text line back into an Expense or Income object.
 fun parseTransaction(line: String): Transaction? {
     val parts = line.split("|", limit = 6)
     if (parts.size != 5 && parts.size != 6) return null
@@ -1050,17 +1102,20 @@ fun parseTransaction(line: String): Transaction? {
     }
 }
 
+// Loads the saved budget limit, or returns null if no budget is set.
 fun loadBudgetLimit(): Double? {
     val file = File(BUDGET_FILE_NAME)
     if (!file.exists()) return null
     return file.readText().trim().toDoubleOrNull()
 }
 
+// Saves the budget limit to budget.txt.
 fun saveBudgetLimit(limit: Double) {
     val file = File(BUDGET_FILE_NAME)
     file.writeText(limit.toString())
 }
 
+// Deletes budget.txt when the user removes the budget limit.
 fun deleteBudgetLimit() {
     val file = File(BUDGET_FILE_NAME)
     if (file.exists()) {
@@ -1068,6 +1123,7 @@ fun deleteBudgetLimit() {
     }
 }
 
+// Loads saved category budgets from category_budgets.txt.
 fun loadCategoryBudgets(): Map<Category, Double> {
     val file = File(CATEGORY_BUDGETS_FILE_NAME)
     if (!file.exists()) return emptyMap()
@@ -1089,6 +1145,7 @@ fun loadCategoryBudgets(): Map<Category, Double> {
     }.toMap()
 }
 
+// Saves all category budgets to category_budgets.txt.
 fun saveCategoryBudgets(categoryBudgets: Map<Category, Double>) {
     val file = File(CATEGORY_BUDGETS_FILE_NAME)
     file.printWriter().use { out ->
