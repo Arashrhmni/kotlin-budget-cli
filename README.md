@@ -1,35 +1,45 @@
 # 💶 Kotlin Budget Tracker
 
-A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin. The app can save and load transactions, use custom dates, track payment methods, filter and sort data, show summaries, manage budgets, export to CSV, and safely delete data.
-
-The menu is now grouped into smaller sections, so the app is easier to use than one long menu with many options.
+A command-line budget tracking tool written in Kotlin. Built as a learning project while getting started with Kotlin — now with simple file saving/loading, optional custom dates, payment methods, deletion, editing, filtering, sorting, selected monthly summaries, smallest expense lookup, average expense calculation, transaction count summary, CSV export, clear-all confirmation, a removable total budget limit, category budgets, and stronger input validation.
 
 ## Features
 
 - Add expenses and income with a description, amount, category, date, and payment method
 - Press Enter to use today's date, or enter a custom date in `YYYY-MM-DD` format
 - Pick a payment method from `CASH`, `CARD`, `PAYPAL`, `BANK_TRANSFER`, or `OTHER`
-- View all transactions with type labels, categories, payment methods, and dates
+- Filter transactions by payment method, for example only `CARD` or only `CASH` transactions
+- Summarize expenses and income broken down by payment method
 - Edit a transaction by number, including the date and payment method
-- Delete one transaction with confirmation before it is removed
-- Clear all transactions with a strong `DELETE` confirmation
+- Delete transactions by number, with confirmation before the transaction is removed
 - Filter transactions by type, category, description text, or payment method
 - Sort transactions by date or amount
-- Summarize spending and income by category
-- Summarize spending and income by payment method
-- Show the current balance
-- Find the biggest single expense
-- Find the smallest single expense
-- Show the average expense amount
-- Show how many expense, income, and total transactions are saved
 - Show a monthly summary for a selected year and month
-- Set, check, and remove a total monthly budget limit
-- Set, check, and remove category budgets
+- Find your smallest single expense
+- Show the average expense amount
+- Show how many expenses, income transactions, and total transactions are saved
 - Export all transactions to a CSV file that can be opened in Excel
+- Clear all transactions with a strong `DELETE` confirmation
+- Set a total monthly budget limit and check how much you have left
+- Remove the total monthly budget limit again
+- Set category budgets for expense categories like `FOOD` or `TRANSPORT`
+- Show category budget status and warnings when you go over a category budget
+- Better input validation for menu choices, amounts, dates, categories, and payment methods
+- Categories enforced via `enum class` for safer input
+- Payment methods enforced via `enum class` for safer input
+- `sealed interface` models both `Expense` and `Income` as transaction types
+- View all transactions with type labels, categories, payment methods, and dates
+- Summarize spending and income broken down by category
+- Summarize spending and income broken down by payment method
+- See your current balance (total income minus total expenses)
+- Find your biggest single expense
+- Find your smallest single expense
+- Count how many expenses, income transactions, and total transactions are saved
 - Automatically save transactions to `transactions.txt`
 - Automatically load saved transactions when the program starts
 - Save the total budget limit to `budget.txt`
+- Remove `budget.txt` again when the budget limit is removed
 - Save category budgets to `category_budgets.txt`
+- Export transactions to `transactions_export.csv`
 
 ## Getting Started
 
@@ -52,7 +62,24 @@ kotlinc Main.kt -include-runtime -d budget.jar
 java -jar budget.jar
 ```
 
-## Main menu
+## How saving works
+
+- The app creates a file called `transactions.txt` for all transactions
+- The app saves the total budget limit in `budget.txt`
+- If the budget limit is removed, `budget.txt` is deleted
+- The app saves category budgets in `category_budgets.txt`
+- Every time you add, edit, delete, or update a budget, the files are updated automatically
+- When you restart the app, all saved data is loaded back in
+- Clearing all transactions only empties `transactions.txt`; the budget files stay saved
+- Older saved transactions without a payment method are still loaded, and their payment method is set to `OTHER`
+
+## How CSV export works
+
+- The app can export all saved transactions to `transactions_export.csv`
+- The CSV file contains these columns: `Type`, `Description`, `Amount`, `Category`, `Date`, and `PaymentMethod`
+- The exported file can be opened with spreadsheet tools like Excel, Google Sheets, or LibreOffice Calc
+
+## Example session
 
 ```text
 💶 Kotlin Budget Tracker
@@ -60,29 +87,30 @@ Loaded 3 transaction(s).
 Current budget limit: €500.00
 Loaded 2 category budget(s).
 
---- Main Menu ---
-1. Add transaction
-2. View and search transactions
-3. Reports and summaries
-4. Manage budgets
-5. Export data
-6. Delete or clear data
-7. Exit
-Choose:
-```
-
-## Add transaction menu
-
-```text
---- Add Transaction ---
+--- Menu ---
 1. Add expense
 2. Add income
-3. Back to main menu
-```
-
-Example:
-
-```text
+3. View all transactions
+4. Summary by category
+5. Summary by payment method
+6. Balance
+7. Biggest expense
+8. Smallest expense
+9. Average expense
+10. Transaction count summary
+11. Delete transaction
+12. Set budget limit
+13. Remove budget limit
+14. Check budget status
+15. Filter transactions
+16. Edit transaction
+17. Monthly summary
+18. Sort transactions
+19. Set category budget
+20. Check category budgets
+21. Export transactions to CSV
+22. Clear all transactions
+23. Exit
 Choose: 1
 Description: Groceries
 Amount (€): 24.50
@@ -104,21 +132,29 @@ Choose: 2
 ✅ Expense added: Groceries — €24.50 [FOOD] [CARD] on 2026-05-18
 ```
 
-## View and search transactions menu
+## Example delete confirmation
 
 ```text
---- View and Search Transactions ---
-1. View all transactions
-2. Filter transactions
-3. Sort transactions
-4. Back to main menu
+Choose: 11
+Enter transaction number to delete: 2
+Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
+Are you sure you want to delete this transaction? (y/n): n
+Delete cancelled.
 ```
 
-Example filter by payment method:
+## Example remove budget limit
 
 ```text
---- View and Search Transactions ---
-Choose: 2
+Choose: 13
+Current budget limit: €500.00
+Are you sure you want to remove the budget limit? (y/n): y
+✅ Budget limit removed.
+```
+
+## Example filter by payment method
+
+```text
+Choose: 15
 
 Filter Transactions
 1. View only expenses
@@ -139,33 +175,23 @@ Transactions paid with CARD:
   1. [EXPENSE] [FOOD] [CARD] Groceries: €24.50 (2026-05-18)
 ```
 
-## Reports and summaries menu
+## Example summary by payment method
 
 ```text
---- Reports and Summaries ---
-1. Summary by category
-2. Summary by payment method
-3. Balance
-4. Biggest expense
-5. Smallest expense
-6. Average expense
-7. Transaction count summary
-8. Monthly summary
-9. Back to main menu
+Choose: 5
+
+Expenses by Payment Method:
+  CARD: €24.50 (1 item(s))
+  CASH: €8.00 (2 item(s))
+
+Income by Payment Method:
+  BANK_TRANSFER: €1200.00 (1 item(s))
 ```
 
-Example transaction count summary:
+## Example monthly summary
 
 ```text
-Transaction count summary:
-  Expenses: 3
-  Income:   1
-  Total:    4
-```
-
-Example monthly summary:
-
-```text
+Choose: 16
 Enter year, for example 2026: 2026
 Enter month (1-12): 5
 
@@ -176,48 +202,44 @@ Monthly summary for MAY 2026:
   Balance:        €860.00
 ```
 
-## Manage budgets menu
+## Example smallest expense
 
 ```text
---- Manage Budgets ---
-1. Set budget limit
-2. Remove budget limit
-3. Check budget status
-4. Set category budget
-5. Remove category budget
-6. Check category budgets
-7. Back to main menu
+Choose: 8
+
+Smallest expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
 ```
 
-Example remove budget limit:
+## Example average expense
 
 ```text
-Current budget limit: €500.00
-Are you sure you want to remove the budget limit? (y/n): y
-✅ Budget limit removed.
+Choose: 9
+
+Average expense:
+  Number of expenses: 3
+  Total expenses:     €90.00
+  Average expense:    €30.00
 ```
 
-Example remove category budget:
+## Example transaction count summary
 
 ```text
-Choose a category budget to remove:
-  1. FOOD — €200.00
-  2. TRANSPORT — €80.00
-Choose: 1
-Selected category budget: FOOD — €200.00
-Are you sure you want to remove this category budget? (y/n): y
-✅ Category budget removed: FOOD
+Choose: 10
+
+Transaction count summary:
+  Expenses: 3
+  Income:   1
+  Total:    4
 ```
 
-## Export data
-
-Choosing `5. Export data` from the main menu creates this file:
+## Example CSV export
 
 ```text
-transactions_export.csv
+Choose: 21
+✅ Transactions exported to transactions_export.csv
 ```
 
-The CSV file contains these columns:
+Example CSV content:
 
 ```csv
 Type,Description,Amount,Category,Date,PaymentMethod
@@ -225,27 +247,11 @@ Type,Description,Amount,Category,Date,PaymentMethod
 "INCOME","Salary","1200.00","SALARY","2026-05-01","BANK_TRANSFER"
 ```
 
-## Delete or clear data menu
+## Example clear all transactions
 
 ```text
---- Delete or Clear Data ---
-1. Delete one transaction
-2. Clear all transactions
-3. Back to main menu
-```
+Choose: 22
 
-Example delete confirmation:
-
-```text
-Enter transaction number to delete: 2
-Selected Expense: Coffee — €3.50 [FOOD] [CARD] on 2026-05-18
-Are you sure you want to delete this transaction? (y/n): n
-Delete cancelled.
-```
-
-Example clear all transactions:
-
-```text
 Clear all transactions
 This will delete all 4 saved transaction(s).
 Your budget limit and category budgets will stay saved.
@@ -253,52 +259,33 @@ Type DELETE to confirm: DELETE
 ✅ All transactions were cleared.
 ```
 
-## How saving works
-
-- The app creates a file called `transactions.txt` for all transactions
-- The app saves the total budget limit in `budget.txt`
-- If the budget limit is removed, `budget.txt` is deleted
-- The app saves category budgets in `category_budgets.txt`
-- If a category budget is removed, `category_budgets.txt` is updated
-- Every time you add, edit, delete, or update a budget, the files are updated automatically
-- When you restart the app, all saved data is loaded back in
-- Clearing all transactions only empties `transactions.txt`; the budget files stay saved
-- Older saved transactions without a payment method are still loaded, and their payment method is set to `OTHER`
-
 ## What I practiced
 
 - `data class` for structured data
-- `enum class` for locked, type-safe category and payment method options
+- `enum class` for locked, type-safe category options
+- `enum class` for locked, type-safe payment method options
 - `sealed interface` to model a closed set of transaction types (`Expense`, `Income`)
-- `LocalDate` and `LocalDate.parse()` for transaction dates
+- `LocalDate` for transaction dates
+- `LocalDate.parse()` for custom date input
 - `Month.of()` for selected monthly summaries
-- Basic file handling with `File`, `readLines()`, `printWriter()`, `writeText()`, and `delete()`
+- Basic file handling with `File`, `readLines()`, `printWriter()`, and `writeText()`
 - CSV export with simple row creation and value escaping
 - Clearing a mutable list with `clear()`
-- Removing an item from a mutable map with `remove()`
+- Deleting a saved file with `File.delete()`
 - Filtering a list by enum values such as category and payment method
-- Grouping transactions with `groupBy`
+- Grouping transactions by payment method with `groupBy`
 - Backward-compatible file loading for older transaction lines
 - `when` expressions on sealed types
 - `filterIsInstance<T>()` to filter a mixed list by type
 - `contains(..., ignoreCase = true)` for simple search
 - Sorting with `sortedBy()` and `sortedByDescending()`
-- Finding biggest and smallest values with `maxBy` and `minBy`
+- Date-based filtering for monthly summaries
+- Finding the smallest value in a list with `minBy`
 - Simple average calculation
 - Counting list items with `.size`
+- `mutableListOf` and list operations
+- Lambda functions (`forEach`, `forEachIndexed`, `groupBy`, `maxBy`, `sumOf`)
 - Input handling with `readln()` and number parsing
 - Simple yes/no confirmation handling before deleting data or removing settings
 - Reusable helper functions for validation
 - Function decomposition
-- Nested menus for a cleaner command-line app structure
-- Simple code comments to make the project easier to understand while learning Kotlin
-
-## Future Improvements
-
-This project is intentionally kept simple because it is a beginner Kotlin learning project. Possible future improvements could be:
-
-- Add unit tests for important functions
-- Add simple charts for expenses
-- Store data in a small database instead of text files
-- Build a simple desktop or Android interface
-- Add more export formats
