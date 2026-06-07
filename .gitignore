@@ -1,15 +1,18 @@
-# Compiled output
+# Kotlin / Java build output
 *.jar
 *.class
-
-# IntelliJ IDEA
-.idea/
-*.iml
+build/
 out/
 
-# Gradle (if added later)
-.gradle/
-build/
+# IntelliJ IDEA project files
+.idea/
+*.iml
 
-# macOS
+# App data files created while running the budget tracker
+transactions.txt
+budget.txt
+category_budgets.txt
+transactions_export.csv
+
+# Operating system files
 .DS_Store

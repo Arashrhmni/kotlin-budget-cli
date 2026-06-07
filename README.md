@@ -292,3 +292,13 @@ Type DELETE to confirm: DELETE
 - Function decomposition
 - Nested menus for a cleaner command-line app structure
 - Simple code comments to make the project easier to understand while learning Kotlin
+
+## Future Improvements
+
+This project is intentionally kept simple because it is a beginner Kotlin learning project. Possible future improvements could be:
+
+- Add unit tests for important functions
+- Add simple charts for expenses
+- Store data in a small database instead of text files
+- Build a simple desktop or Android interface
+- Add more export formats
